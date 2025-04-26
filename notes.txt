@@ -1,0 +1,32 @@
+Main Window:
+* Inherits from QMainWindow
+* gets layout as this -> layout() -> setSizeConstraint(QLayout::SetFixedSize) [on research it seems this is a good way to make the Main Window non-resizable]
+
+GameBoard:
+* Inherits from QFrame
+* Attribute: WA_LayoutUsesWidgetRect
+* Size policy: Minimum
+* Layout: QGridLayout
+  * Spacing: 0
+  * Content margin: 0, 0, 0, 0
+  * Size constraint: SetFixedSize
+
+Tile:
+* Inherits from QPushButton
+
+Layouts:
+ * QFrame called mainFrame
+ * QVBoxLayout called mainFrameLayout
+ * QHBoxLayout called infoLayout
+ -
+ * mainFrame's layout is mainFrameLayout
+ * mainFrameLayout contains infoLayout and GameBoard
+ * infoLayout contains mineCounter, spacer, newGame, spacer, mineTimer
+ -
+ * MainWindows's central widget is mainFrame
+ * MainWindow's sizePolicy is Minimum
+
+ MineCounter, MineTimer:
+ * Inherits from QLCDNumber
+
+ gameClock (QTimer)
