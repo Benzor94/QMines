@@ -4,7 +4,7 @@ from typing import Final, cast
 
 class GameParameters:
     MIN_SIZE: Final[int] = 4
-    MAX_SIZE: Final[int] = 100
+    MAX_SIZE: Final[int] = 30
     SIZE_RANGE: Final[range] = range(MIN_SIZE, MAX_SIZE + 1)
 
     def __init__(self, n_rows: int, n_cols: int, *, n_mines: int | None = None, density: float | None = None) -> None:
