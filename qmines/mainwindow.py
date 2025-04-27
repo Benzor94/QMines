@@ -4,17 +4,18 @@ from PySide6.QtWidgets import QApplication, QFrame, QGridLayout, QHBoxLayout, QL
 from PySide6.QtCore import QSize, Qt
 
 from qmines.game_parameters import GameParameters
+from qmines.board.board_tile import Tile
 
 
-class Tile(QPushButton):
-    def __init__(self) -> None:
-        super().__init__()
-        # self.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
-        self.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
+# class Tile(QPushButton):
+#     def __init__(self) -> None:
+#         super().__init__()
+#         # self.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+#         self.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
     
-    @override
-    def sizeHint(self) -> QSize:
-        return QSize(30, 30)
+#     @override
+#     def sizeHint(self) -> QSize:
+#         return QSize(30, 30)
 
 class GameBoard(QFrame):
 
