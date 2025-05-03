@@ -36,6 +36,7 @@ class MainWindow(QMainWindow):
         # if (layout := self.layout()) is not None:
         #     layout.setSizeConstraint(QLayout.SizeConstraint.SetFixedSize)
         self._set_up()
+        self._is_paused = False
     
     def _set_up(self) -> None:
         frame = QFrame()
@@ -48,16 +49,22 @@ class MainWindow(QMainWindow):
         #mine_counter.setFlat(True)
 
         new_game_button = QPushButton()
-        new_game_button.setText('New Game')
+        self.pause_btn = new_game_button
+        new_game_button.setText('Pause')
         #new_game_button.setFlat(True)
+        new_game_button.clicked.connect(self.on_pause)
 
         time_tracker = QPushButton()
         time_tracker.setText('32')
         #time_tracker.setFlat(True)
 
         game_board = GameBoard()
+        self.board = game_board
         game_board.setAttribute(Qt.WidgetAttribute.WA_LayoutUsesWidgetRect)
         game_board.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
+        sp = game_board.sizePolicy()
+        sp.setRetainSizeWhenHidden(True)
+        game_board.setSizePolicy(sp)
         for i in range(self._game_parameters.n_rows):
             for j in range(self._game_parameters.n_cols):
                 board_layout.addWidget(Tile(), i, j)
@@ -77,6 +84,16 @@ class MainWindow(QMainWindow):
 
         self.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
         self.setCentralWidget(frame)
+    
+    def on_pause(self) -> None:
+        if self._is_paused:
+            self.board.show()
+            self.pause_btn.setText('Pause')
+            self._is_paused = False
+        else:
+            self.board.hide()
+            self.pause_btn.setText('Resume')
+            self._is_paused = True
 
 if __name__ == '__main__':
 

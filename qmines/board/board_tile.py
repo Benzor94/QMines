@@ -17,12 +17,12 @@ class Tile(QPushButton):
     MINE_CHAR = '\U0001F4A3'
     FLAG_CHAR = '\U0001F6A9'
 
-    def __init__(self) -> None:
+    def __init__(self, coordinates: tuple[int, int] = (0, 0)) -> None:
         super().__init__()
         self._is_mine: bool = False
         self._visual_state: TileVisualState = TileVisualState.EMPTY
         self._proximity: int = 0
-        self._coordinates: tuple[int, int] = (0, 0)
+        self._coordinates: tuple[int, int] = coordinates
 
         self.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
         self._set_font_size(self.size().height())
