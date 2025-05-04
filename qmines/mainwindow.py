@@ -61,10 +61,13 @@ class MainWindow(QMainWindow):
         game_board = GameBoard()
         self.board = game_board
         game_board.setAttribute(Qt.WidgetAttribute.WA_LayoutUsesWidgetRect)
-        game_board.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
-        sp = game_board.sizePolicy()
-        sp.setRetainSizeWhenHidden(True)
-        game_board.setSizePolicy(sp)
+        # game_board.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
+        # sp = game_board.sizePolicy()
+        # sp.setRetainSizeWhenHidden(True)
+        # game_board.setSizePolicy(sp)
+        size_policy = QSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
+        size_policy.setRetainSizeWhenHidden(True)
+        game_board.setSizePolicy(size_policy)
         for i in range(self._game_parameters.n_rows):
             for j in range(self._game_parameters.n_cols):
                 board_layout.addWidget(Tile(), i, j)

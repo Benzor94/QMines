@@ -17,8 +17,9 @@ class Board(QFrame):
         self._params = parameters
         self._tiles = self._generate_tiles()
         self.setAttribute(Qt.WidgetAttribute.WA_LayoutUsesWidgetRect)
-        self.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
-        # self.setSizePolicy()
+        size_policy = QSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
+        size_policy.setRetainSizeWhenHidden(True)
+        self.setSizePolicy(size_policy)
         self.board_layout = QGridLayout()
         for tile in self:
             self.board_layout.addWidget(tile, *tile.coordinates)
@@ -74,4 +75,7 @@ class Board(QFrame):
         j_is_on_board = 0 <= j < self.n_cols
         crds_are_not_central = (i, j) != center_crds
         return i_is_on_board and j_is_on_board and crds_are_not_central
+    
+    def _set_board_layout_properties(self) -> None:
+        ...
 
