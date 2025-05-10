@@ -34,11 +34,8 @@ class Tile(QPushButton):
     # Signal emitted when a tile that has already been revealed is clicked.
     revealed_tile_clicked = Signal(Coordinates)
 
-    # Override of clicked signal; params are the coordinates of the triggering tile.
-    clicked = Signal(Coordinates) # TODO: Probably no params needed, no override needed
-
-    # Provide a signal for right clicks; params are the coordinates of the triggering tile.
-    right_clicked = Signal(Coordinates) # TODO: Probably no params needed
+    # Provide a signal for right clicks.
+    right_clicked = Signal()
 
     # Signal emitted when flat is set or removed.
     mine_count_change = Signal(MineCountChange)
