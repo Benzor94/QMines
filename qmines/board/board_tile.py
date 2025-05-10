@@ -2,34 +2,57 @@
 
 from enum import Enum
 from typing import Final, override
-from PySide6.QtCore import QSize
-from PySide6.QtGui import QFont, QResizeEvent
+from PySide6.QtCore import QSize, Slot, Signal, Qt
+from PySide6.QtGui import QFont, QResizeEvent, QMouseEvent
 from PySide6.QtWidgets import QPushButton, QSizePolicy
 
-class TileVisualState(Enum):
-    EMPTY = 0
-    FLAGGED = 1
-    REVEALED = 2
+from qmines.symbols import Symbols
+
+class TileState(Enum):
+    INERT = 0  # The first click has not been made yet.
+    ACTIVE = 1 # The game is ongoing.
+    GAME_OVER = 2  # The game has ended.
+
+
+class MineCountChange(Enum):
+    ADDED = 1
+    REMOVED = -1
 
 class Tile(QPushButton):
 
     MIN_SIZE: Final[int] = 25
-    MINE_CHAR = '\U0001F4A3'
-    FLAG_CHAR = '\U0001F6A9'
+
+    # Signal emitted when a mine is revealed; params are the coordinates of the triggering tile.
+    mine_exploded = Signal(int, int)
+
+    # Signal emitted when the tile is clicked for the first time in the game (among all tiles).
+    # Params are the coordinates of the triggering tile.
+    first_clicked = Signal(int, int)
+
+    # Override of clicked signal; params are the coordinates of the triggering tile.
+    clicked = Signal(int, int)
+
+    # Provide a signal for right clicks; params are the coordinates of the triggering tile.
+    right_clicked = Signal(int, int)
+
+    # Signal emitted when flat is set or removed.
+    mine_count_change = Signal(MineCountChange)
+
+    # Signal emitted when a tile is revealed.
+    tile_revealed = Signal()
 
     def __init__(self, coordinates: tuple[int, int] = (0, 0)) -> None:
         super().__init__()
         self._is_mine: bool = False
-        self._visual_state: TileVisualState = TileVisualState.EMPTY
+        self._is_flagged: bool = False
         self._proximity: int = 0
         self._coordinates: tuple[int, int] = coordinates
 
         self.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
         self._set_font_size(self.size().height())
 
-        # This is only for testing
-        self.setCheckable(True)
-        self.clicked.connect(self.on_click)
+        self.setCheckable(False)
+        self._is_game_over = True
 
     
     @property
@@ -38,10 +61,6 @@ class Tile(QPushButton):
     @is_mine.setter
     def is_mine(self, bool_: bool) -> None:
         self._is_mine = bool(bool_)
-    
-    @property
-    def visual_state(self) -> TileVisualState:
-        return self._visual_state
     
     @property
     def proximity(self) -> int:
@@ -57,9 +76,9 @@ class Tile(QPushButton):
     def coordinates(self) -> tuple[int, int]:
         return self._coordinates
     @coordinates.setter
-    def coordinates(self, i: int, j: int) -> None:
+    def coordinates(self, coords: tuple[int, int]) -> None:
         # Validity check must be performed by the caller.
-        self._coordinates = (i, j)
+        self._coordinates = coords
     
     @override
     def sizeHint(self) -> QSize:
@@ -69,15 +88,47 @@ class Tile(QPushButton):
     def resizeEvent(self, event: QResizeEvent) -> None:
         new_height = event.size().height()
         self._set_font_size(new_height)
-    
-    def on_click(self) -> None:
-        self.setText(self.__class__.MINE_CHAR)
-        self.setChecked(True)
-        self.setDisabled(True)
 
     def _set_font_size(self, height: int) -> None:
         new_size = height // 2
         current_font = self.font()
         if current_font.pointSize() != new_size:
             self.setFont(QFont(current_font.family(), new_size))
+
+    @override
+    def mouseReleaseEvent(self, e: QMouseEvent, /):
+        if e.button() == Qt.MouseButton.LeftButton:
+            self.clicked.emit()
+        elif e.button() == Qt.MouseButton.RightButton:
+            self.right_clicked.emit()
+
+    @Slot()
+    def on_checked(self) -> None:
+        if not self._is_game_over:
+            self.setCheckable(False)
+            if self.is_mine:
+                self.setText(Symbols.EXPLOSION.value)
+                self.mine_exploded.emit(*self.coordinates)
+            elif self.proximity > 0:
+                self.setText(str(self.proximity))
+
+    @Slot()
+    def on_right_click(self) -> None:
+        if not self.isChecked():
+            match self._is_flagged:
+                case True:
+                    self.setText('')
+                    self._is_flagged = False
+                    self.setCheckable(True)
+
+    @Slot()
+    def on_game_over(self) -> None:
+        self._is_game_over = True
+        if not self.isChecked():
+            self._is_game_over = False
+
+    def _set_visual_state(self): ...
+
+
+
 
