@@ -6,53 +6,58 @@ from PySide6.QtCore import QSize, Slot, Signal, Qt
 from PySide6.QtGui import QFont, QResizeEvent, QMouseEvent
 from PySide6.QtWidgets import QPushButton, QSizePolicy
 
-from qmines.symbols import Symbols
+from qmines.symbols import TileSymbol, INDEX_MAP
+
+Coordinates = tuple[int, int]
 
 class TileState(Enum):
     INERT = 0  # The first click has not been made yet.
     ACTIVE = 1 # The game is ongoing.
-    GAME_OVER = 2  # The game has ended.
-
+    FINAL = 2  # The game has ended.
 
 class MineCountChange(Enum):
     ADDED = 1
     REMOVED = -1
+
 
 class Tile(QPushButton):
 
     MIN_SIZE: Final[int] = 25
 
     # Signal emitted when a mine is revealed; params are the coordinates of the triggering tile.
-    mine_exploded = Signal(int, int)
+    mine_exploded = Signal(Coordinates)
 
     # Signal emitted when the tile is clicked for the first time in the game (among all tiles).
     # Params are the coordinates of the triggering tile.
-    first_clicked = Signal(int, int)
+    first_clicked = Signal(Coordinates)
+
+    # Signal emitted when a tile that has already been revealed is clicked.
+    revealed_tile_clicked = Signal(Coordinates)
 
     # Override of clicked signal; params are the coordinates of the triggering tile.
-    clicked = Signal(int, int)
+    clicked = Signal(Coordinates) # TODO: Probably no params needed, no override needed
 
     # Provide a signal for right clicks; params are the coordinates of the triggering tile.
-    right_clicked = Signal(int, int)
+    right_clicked = Signal(Coordinates) # TODO: Probably no params needed
 
     # Signal emitted when flat is set or removed.
     mine_count_change = Signal(MineCountChange)
 
-    # Signal emitted when a tile is revealed.
-    tile_revealed = Signal()
+    # Signal emitted when a non-mine tile is revealed; params are the coordinates of the triggering tile.
+    tile_revealed = Signal(Coordinates)
 
-    def __init__(self, coordinates: tuple[int, int] = (0, 0)) -> None:
+    def __init__(self, coordinates: Coordinates = (0, 0)) -> None:
         super().__init__()
         self._is_mine: bool = False
         self._is_flagged: bool = False
         self._proximity: int = 0
-        self._coordinates: tuple[int, int] = coordinates
+        self._coordinates: Coordinates = coordinates
+        self._state: TileState = TileState.INERT
 
         self.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
         self._set_font_size(self.size().height())
 
         self.setCheckable(False)
-        self._is_game_over = True
 
     
     @property
@@ -61,6 +66,14 @@ class Tile(QPushButton):
     @is_mine.setter
     def is_mine(self, bool_: bool) -> None:
         self._is_mine = bool(bool_)
+
+    @property
+    def is_flagged(self) -> bool:
+        return self._is_flagged
+
+    @property
+    def is_pressed(self) -> bool:
+        return self.isDown()
     
     @property
     def proximity(self) -> int:
@@ -73,12 +86,8 @@ class Tile(QPushButton):
         self._proximity = mines_nearby
     
     @property
-    def coordinates(self) -> tuple[int, int]:
+    def coordinates(self) -> Coordinates:
         return self._coordinates
-    @coordinates.setter
-    def coordinates(self, coords: tuple[int, int]) -> None:
-        # Validity check must be performed by the caller.
-        self._coordinates = coords
     
     @override
     def sizeHint(self) -> QSize:
@@ -103,31 +112,68 @@ class Tile(QPushButton):
             self.right_clicked.emit()
 
     @Slot()
-    def on_checked(self) -> None:
-        if not self._is_game_over:
-            self.setCheckable(False)
-            if self.is_mine:
-                self.setText(Symbols.EXPLOSION.value)
-                self.mine_exploded.emit(*self.coordinates)
-            elif self.proximity > 0:
-                self.setText(str(self.proximity))
+    def on_left_click(self) -> None:
+        match self._state:
+            case TileState.INERT:
+                self._left_click_when_inert()
+            case TileState.ACTIVE:
+                if self.is_pressed:
+                    self._left_click_when_active_and_pressed()
+                else:
+                    self._left_click_when_active_and_not_pressed()
+            case TileState.FINAL:
+                return
 
     @Slot()
     def on_right_click(self) -> None:
-        if not self.isChecked():
-            match self._is_flagged:
-                case True:
-                    self.setText('')
-                    self._is_flagged = False
-                    self.setCheckable(True)
+        if (self._state != TileState.ACTIVE) or (not self.is_pressed):
+            return
+        if self._is_flagged:
+            self._is_flagged = False
+            self._set_visual_state(TileSymbol.EMPTY)
+            self.mine_count_change.emit(MineCountChange.REMOVED)
+        else:
+            self._is_flagged = True
+            self._set_visual_state(TileSymbol.FLAG)
+            self.mine_count_change.emit(MineCountChange.ADDED)
 
     @Slot()
     def on_game_over(self) -> None:
-        self._is_game_over = True
-        if not self.isChecked():
-            self._is_game_over = False
+        if not self.is_pressed:
+            symbol = TileSymbol.MINE if self.is_mine else TileSymbol(self.proximity)
+            self._set_pressed()
+            self._set_visual_state(symbol)
+        self._state = TileState.FINAL
+        self.setDisabled(True) # TODO: Since mouse events are overriden, check if disabled prevents signals.
 
-    def _set_visual_state(self): ...
+    @Slot(Coordinates)
+    def on_game_start(self, coords: Coordinates) -> None:
+        self._state = TileState.ACTIVE
+        if coords == self.coordinates:
+            self.on_left_click()
+
+    def _set_visual_state(self, symbol: TileSymbol):
+        self.setText(INDEX_MAP[symbol.value])
+
+    def _left_click_when_inert(self) -> None:
+        self.first_clicked.emit(*self.coordinates)
+
+    def _left_click_when_active_and_not_pressed(self) -> None:
+        self._set_pressed()
+        if self.is_mine:
+            self._set_visual_state(TileSymbol.EXPLOSION)
+            self.mine_exploded.emit(*self.coordinates)
+        else:
+            self._set_visual_state(TileSymbol(self.proximity))
+            self.tile_revealed.emit(*self.coordinates)
+
+    def _left_click_when_active_and_pressed(self) -> None:
+        if not self.is_mine:
+            self.revealed_tile_clicked.emit(*self.coordinates)
+
+    def _set_pressed(self) -> None:
+        self.setDown(True)
+
 
 
 
