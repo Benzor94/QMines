@@ -161,6 +161,7 @@ class Tile(QPushButton):
         self.first_clicked.emit(*self.coordinates)
 
     def _left_click_when_active_and_not_pressed(self) -> None:
+        if self.is_flagged: return
         self._set_pressed()
         if self.is_mine:
             self._set_visual_state(TileSymbol.EXPLOSION)

@@ -57,19 +57,38 @@ class MainWindow(QMainWindow):
         self.game_start.emit(i, j)
 
     @Slot(int, int)
-    def on_revealed_tile_clicked(self, i: int, j: int): ...
+    def on_revealed_tile_clicked(self, i: int, j: int):
+        """
+        Reveal all hidden tiles around (i, j) unless it has a flag.
+        """
+        ...
 
     @Slot(MineCountChange)
-    def on_mine_count_change(self, change: MineCountChange): ...
+    def on_mine_count_change(self, change: MineCountChange):
+        """
+        Increase or decrease the mine count in the mine counter.
+        """
 
     @Slot(int, int)
-    def on_tile_revealed(self, i: int, j: int): ...
+    def on_tile_revealed(self, i: int, j: int):
+        """
+        If the tile has proximity 0, reveal all neighbours
+        """
+        ...
 
     @Slot(GameOver)
-    def on_game_over(self, reason: GameOver): ...
+    def on_game_over(self, reason: GameOver):
+        """
+        Emission of the game over signal has already happened
+        """
+        ...
 
     @Slot(bool)
-    def on_pause(self, paused: bool): ...
+    def on_pause(self, paused: bool):
+        """
+        Tell the tile board to hide itself.
+        """
+        ...
 
 
     @staticmethod
