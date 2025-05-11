@@ -8,8 +8,6 @@ from PySide6.QtWidgets import QPushButton, QSizePolicy
 
 from qmines.symbols import TileSymbol, INDEX_MAP
 
-Coordinates = tuple[int, int]
-
 class TileState(Enum):
     INERT = 0  # The first click has not been made yet.
     ACTIVE = 1 # The game is ongoing.
@@ -25,14 +23,14 @@ class Tile(QPushButton):
     MIN_SIZE: Final[int] = 25
 
     # Signal emitted when a mine is revealed; params are the coordinates of the triggering tile.
-    mine_exploded = Signal(Coordinates)
+    mine_exploded = Signal(int, int)
 
     # Signal emitted when the tile is clicked for the first time in the game (among all tiles).
     # Params are the coordinates of the triggering tile.
-    first_clicked = Signal(Coordinates)
+    first_clicked = Signal(int, int)
 
     # Signal emitted when a tile that has already been revealed is clicked.
-    revealed_tile_clicked = Signal(Coordinates)
+    revealed_tile_clicked = Signal(int, int)
 
     # Provide a signal for right clicks.
     right_clicked = Signal()
@@ -41,14 +39,14 @@ class Tile(QPushButton):
     mine_count_change = Signal(MineCountChange)
 
     # Signal emitted when a non-mine tile is revealed; params are the coordinates of the triggering tile.
-    tile_revealed = Signal(Coordinates)
+    tile_revealed = Signal(int, int)
 
-    def __init__(self, coordinates: Coordinates = (0, 0)) -> None:
+    def __init__(self, coordinates: tuple[int, int] = (0, 0)) -> None:
         super().__init__()
         self._is_mine: bool = False
         self._is_flagged: bool = False
         self._proximity: int = 0
-        self._coordinates: Coordinates = coordinates
+        self._coordinates: tuple[int, int] = coordinates
         self._state: TileState = TileState.INERT
 
         self.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
@@ -83,7 +81,7 @@ class Tile(QPushButton):
         self._proximity = mines_nearby
     
     @property
-    def coordinates(self) -> Coordinates:
+    def coordinates(self) -> tuple[int, int]:
         return self._coordinates
     
     @override
@@ -143,10 +141,10 @@ class Tile(QPushButton):
         self._state = TileState.FINAL
         self.setDisabled(True) # TODO: Since mouse events are overriden, check if disabled prevents signals.
 
-    @Slot(Coordinates)
-    def on_game_start(self, coords: Coordinates) -> None:
+    @Slot(int, int)
+    def on_game_start(self, i: int, j: int) -> None:
         self._state = TileState.ACTIVE
-        if coords == self.coordinates:
+        if (i, j) == self.coordinates:
             self.on_left_click()
 
     def _set_visual_state(self, symbol: TileSymbol):
