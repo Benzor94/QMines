@@ -17,7 +17,6 @@ class MineCountChange(Enum):
     ADDED = 1
     REMOVED = -1
 
-
 class Tile(QPushButton):
 
     MIN_SIZE: Final[int] = 25
@@ -31,6 +30,9 @@ class Tile(QPushButton):
 
     # Signal emitted when a tile that has already been revealed is clicked.
     revealed_tile_clicked = Signal(int, int)
+
+    # Provide a signal for left clicks.
+    left_clicked = Signal()
 
     # Provide a signal for right clicks.
     right_clicked = Signal()
@@ -52,7 +54,10 @@ class Tile(QPushButton):
         self.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
         self._set_font_size(self.size().height())
 
-        self.setCheckable(False)
+        #self.setCheckable(False)
+
+        self.left_clicked.connect(self.on_left_click)
+        self.right_clicked.connect(self.on_right_click)
 
     
     @property
@@ -102,12 +107,13 @@ class Tile(QPushButton):
     @override
     def mouseReleaseEvent(self, e: QMouseEvent, /):
         if e.button() == Qt.MouseButton.LeftButton:
-            self.clicked.emit()
+            self.left_clicked.emit()
         elif e.button() == Qt.MouseButton.RightButton:
             self.right_clicked.emit()
 
     @Slot()
     def on_left_click(self) -> None:
+        print(f'Left clicked: {self.coordinates}')
         match self._state:
             case TileState.INERT:
                 self._left_click_when_inert()
@@ -121,6 +127,7 @@ class Tile(QPushButton):
 
     @Slot()
     def on_right_click(self) -> None:
+        print(f'Right clicked: {self.coordinates}')
         if (self._state != TileState.ACTIVE) or (not self.is_pressed):
             return
         if self._is_flagged:

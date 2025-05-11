@@ -19,6 +19,7 @@ class Board(QFrame):
         self._verify_tile_count_validity()
         self._set_size_properties()
         self._board_layout = QGridLayout()
+        self._set_layout_properties()
     
     @property
     def n_rows(self) -> int:

@@ -1,5 +1,5 @@
-from PySide6.QtWidgets import QLCDNumber
+from PySide6.QtWidgets import QLCDNumber, QPushButton
 
 
-class MineCounter(QLCDNumber):
+class MineCounter(QPushButton):
     ...
