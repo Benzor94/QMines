@@ -1,6 +1,6 @@
 
 
-from collections.abc import Iterator
+from collections.abc import Iterator, Sequence
 from typing import override
 from PySide6.QtCore import QSize, Qt
 from PySide6.QtGui import QResizeEvent
@@ -12,20 +12,14 @@ from qmines.game_parameters import GameParameters
 
 class Board(QFrame):
 
-    def __init__(self, parameters: GameParameters) -> None:
+    def __init__(self, parameters: GameParameters, tiles: Sequence[Tile]) -> None:
         super().__init__()
         self._params = parameters
-        self._tiles = self._generate_tiles()
-        self.setAttribute(Qt.WidgetAttribute.WA_LayoutUsesWidgetRect)
-        size_policy = QSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
-        size_policy.setRetainSizeWhenHidden(True)
-        self.setSizePolicy(size_policy)
-        self.board_layout = QGridLayout()
-        for tile in self:
-            self.board_layout.addWidget(tile, *tile.coordinates)
-        self.board_layout.setSpacing(0)
-        self.board_layout.setContentsMargins(0, 0, 0, 0)
-        self.setLayout(self.board_layout)
+        self._tiles = tuple(tiles)
+        self._verify_tile_count_validity()
+        self._set_size_properties()
+        self._board_layout = QGridLayout()
+        self._set_layout_properties()
     
     @property
     def n_rows(self) -> int:
@@ -66,16 +60,27 @@ class Board(QFrame):
         smallest = min(height, width)
         self.resize(QSize(smallest, smallest))
     
-    def _generate_tiles(self) -> list[Tile]:
-        idx_to_crds = self._params.to_coordinates
-        return [Tile(idx_to_crds(idx)) for idx in range(self.n_tiles)]
+    def _verify_tile_count_validity(self) -> None:
+        if len(self._tiles) != self.n_tiles:
+            raise ValueError(f'The number of tiles in the board object ({len(self._tiles)}) must agree with'
+                             f'the number of tiles in the parameters object ({self.n_tiles}).')
     
     def _coordinates_represent_valid_proximity(self, i: int, j: int, center_crds: tuple[int, int]) -> bool:
         i_is_on_board = 0 <= i < self.n_rows
         j_is_on_board = 0 <= j < self.n_cols
         crds_are_not_central = (i, j) != center_crds
         return i_is_on_board and j_is_on_board and crds_are_not_central
+
+    def _set_size_properties(self) -> None:
+        self.setAttribute(Qt.WidgetAttribute.WA_LayoutUsesWidgetRect)
+        size_policy = QSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
+        size_policy.setRetainSizeWhenHidden(True)
+        self.setSizePolicy(size_policy)
     
-    def _set_board_layout_properties(self) -> None:
-        ...
+    def _set_layout_properties(self) -> None:
+        for tile in self:
+            self._board_layout.addWidget(tile, tile.coordinates[0], tile.coordinates[1])
+        self._board_layout.setSpacing(0)
+        self._board_layout.setContentsMargins(0, 0, 0, 0)
+        self.setLayout(self._board_layout)
 

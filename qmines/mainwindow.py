@@ -50,7 +50,7 @@ class MainWindow(QMainWindow):
 
         new_game_button = QPushButton()
         self.pause_btn = new_game_button
-        new_game_button.setText('Pause')
+        new_game_button.setText('\u25B6')
         #new_game_button.setFlat(True)
         new_game_button.clicked.connect(self.on_pause)
 
