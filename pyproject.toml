@@ -1,0 +1,66 @@
+[project]
+name = "qmines"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Bence Racskó", email = "bracsko94@gmail.com" }
+]
+requires-python = ">=3.13"
+dependencies = [
+    "PySide6>=6.9.1",
+]
+
+[project.scripts]
+qmines = "qmines:main"
+
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[dependency-groups]
+dev = [
+    "pyright>=1.1.401",
+]
+
+[tool.pyright]
+include = ["src"]
+exclude = ["**/node_modules",
+    "**/__pycache__",
+    "src/experimental",
+    "src/typestubs"
+]
+defineConstant = { DEBUG = true }
+
+reportMissingImports = "error"
+reportMissingTypeStubs = false
+
+pythonVersion = "3.13"
+
+strictListInference = true
+strictSetInference = true
+deprecateTypingAliases = true
+
+typeCheckingMode = "standard"
+
+reportUnusedImport = "warning"
+reportUnusedClass = "warning"
+reportUnusedFunction = "warning"
+reportUnusedVariable = "warning"
+reportDuplicateImport = "warning"
+reportUnusedExpression = "warning"
+reportWildcardImportFromLibrary = "error"
+reportPrivateUsage = "error"
+reportDeprecated = "warning"
+reportUninitializedInstanceVariable = "warning"
+reportUnnecessaryCast = "warning"
+reportUnnecessaryIsInstance = "warning"
+reportUnnecessaryComparison = "warning"
+reportUnnecessaryContains = "warning"
+reportUnnecessaryTypeIgnoreComment = "warning"
+reportImplicitOverride = "warning"
+reportShadowedImports = "warning"
+
+executionEnvironments = [
+  { root = "src" }
+]
