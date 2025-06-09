@@ -5,7 +5,7 @@ from importlib.resources import files
 from types import MappingProxyType
 from typing import Final
 
-SETTINGS_FILE: Final[Traversable] = files('qmines') / 'resources' / 'qmines_settings.json'
+SETTINGS_FILE: Final[Traversable] = files('qmines') / 'resources' / 'settings.json'
 DEFAULT_SETTINGS: Final[MappingProxyType[str, int]] = MappingProxyType({'n_rows': 8,
                                                                         'n_cols': 8,
                                                                         'n_mines': 10,
