@@ -11,12 +11,16 @@ DEFAULT_SETTINGS: Final[MappingProxyType[str, int]] = MappingProxyType({'n_rows'
                                                                         'n_mines': 10,
                                                                         'timeout_in_seconds': 0})
 
+CONTROL_PANEL_MIN_HEIGHT: Final[int] = 30
+CONTROL_PANEL_MAX_HEIGHT: Final[int] = 60
+
 class Symbol(Enum):
     MINE = '\U0001F4A3'
     FLAG = '\U0001F6A9'
     PAUSE = '\u23F8'
     PLAY = '\u25B6'
     EXPLOSION = '\U0001F4A5'
+    INFINITY = u"\u221E"
 
 class TileSymbol(Enum):
     EMPTY = 0

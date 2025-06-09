@@ -1,5 +1,8 @@
+from typing import override, Final
 
 import PySide6.QtWidgets as QW
+import PySide6.QtGui as QG
+import PySide6.QtCore as QC
 
 from qmines.board.board import Board
 from qmines.board.tile import Tile
