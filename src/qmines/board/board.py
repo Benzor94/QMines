@@ -19,6 +19,7 @@ class Board(QW.QFrame, AbstractGrid[Tile], metaclass=_ProtocolQWidgetMeta):
     def __init__(self, parameters: GameParameters, tiles: Sequence[Tile]) -> None:
         super().__init__()
         self._parameters = parameters
+        self._h_to_w_ratio = parameters.n_rows / parameters.n_cols
         self._tiles = tiles
         self._layout = QW.QGridLayout()
         self._set_size_properties()
@@ -48,8 +49,11 @@ class Board(QW.QFrame, AbstractGrid[Tile], metaclass=_ProtocolQWidgetMeta):
         size = event.size()
         height = size.height()
         width = size.width()
-        smallest = min(height, width)
-        self.resize(QC.QSize(smallest, smallest))
+        smallest_is_height = height <= width
+        if smallest_is_height:
+            self.resize(QC.QSize(round(height / self._h_to_w_ratio), height))
+        else:
+            self.resize(QC.QSize(width, round(width * self._h_to_w_ratio)))
     
     def _set_size_properties(self) -> None:
         self.setAttribute(QC.Qt.WidgetAttribute.WA_LayoutUsesWidgetRect)
