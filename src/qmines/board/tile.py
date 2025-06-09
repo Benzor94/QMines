@@ -6,7 +6,7 @@ import PySide6.QtGui as QG
 from qmines.utilities import set_font_size_based_on_height
 
 class Tile(QW.QPushButton):
-    MIN_SIZE: Final[int] = 35
+    MIN_SIZE: Final[int] = 30
 
     def __init__(self, coordinates: tuple[int, int] = (0, 0)) -> None:
         super().__init__()
