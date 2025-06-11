@@ -2,5 +2,5 @@
   "n_rows": 8,
   "n_cols": 8,
   "n_mines": 10,
-  "timeout_in_seconds": 300
+  "time_limit_in_seconds": 300
 }

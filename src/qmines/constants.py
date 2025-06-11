@@ -9,15 +9,15 @@ SETTINGS_FILE: Final[Traversable] = files('qmines') / 'resources' / 'settings.js
 DEFAULT_SETTINGS: Final[MappingProxyType[str, int]] = MappingProxyType({'n_rows': 8,
                                                                         'n_cols': 8,
                                                                         'n_mines': 10,
-                                                                        'timeout_in_seconds': 0})
+                                                                        'time_limit_in_seconds': 0})
 MEDIUM_SETTINGS: Final[MappingProxyType[str, int]] = MappingProxyType({'n_rows': 16,
                                                                        'n_cols': 16,
                                                                        'n_mines': 40,
-                                                                       'timeout_in_seconds': 0})
+                                                                       'time_limit_in_seconds': 0})
 HARD_SETTINGS: Final[MappingProxyType[str, int]] = MappingProxyType({'n_rows': 16,
                                                                      'n_cols': 30,
                                                                      'n_mines': 99,
-                                                                     'timeout_in_seconds': 0})
+                                                                     'time_limit_in_seconds': 0})
 
 CONTROL_PANEL_MIN_HEIGHT: Final[int] = 30
 CONTROL_PANEL_MAX_HEIGHT: Final[int] = 60

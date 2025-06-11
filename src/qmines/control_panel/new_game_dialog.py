@@ -1,11 +1,18 @@
+from enum import Enum
+
 import PySide6.QtWidgets as QW
 import PySide6.QtCore as QC
 import PySide6.QtGui as QG
 from PySide6.QtCore import Signal
 
-from qmines.constants import BOARD_MIN_SIZE, BOARD_MAX_SIZE, PREFERRED_MINE_DENSITY, DEFAULT_TIME_LIMIT, MINIMUM_TIME_LIMIT
+from qmines.constants import BOARD_MIN_SIZE, BOARD_MAX_SIZE, PREFERRED_MINE_DENSITY, DEFAULT_TIME_LIMIT, \
+    MINIMUM_TIME_LIMIT, MAXIMUM_TIME_LIMIT, DEFAULT_SETTINGS, MEDIUM_SETTINGS, HARD_SETTINGS
 from qmines.game_parameters.game_parameters import GameParameters
 
+class GameMode(Enum):
+    EASY = 0
+    MEDIUM = 1
+    HARD = 2
 
 class NewGameDialog(QW.QDialog):
     EASY_TEXT = 'Easy\n(8 x 8, 10 mines)'
@@ -13,7 +20,7 @@ class NewGameDialog(QW.QDialog):
     HARD_TEXT = 'Hard\n(30 x 16, 99 mines)'
     CUSTOM_TEXT = 'Custom\n(Set manually)'
 
-    start_new_game = Signal()
+    start_new_game = Signal(GameParameters)
 
     def __init__(self, parameters: GameParameters, parent: QW.QWidget | None = None):
         super().__init__(parent)
@@ -23,7 +30,7 @@ class NewGameDialog(QW.QDialog):
         self._custom_mode_column_value = self._parameters.n_cols
         self._custom_mode_row_value = self._parameters.n_rows
         self._custom_mode_mine_value = self._parameters.n_mines
-        self._timeout_value = self._parameters.timeout_in_seconds
+        self._time_limit_value = self._parameters.time_limit_in_seconds
 
         self._easy_mode_button = QW.QPushButton(self.__class__.EASY_TEXT)
         self._medium_mode_button = QW.QPushButton(self.__class__.MED_TEXT)
@@ -68,18 +75,24 @@ class NewGameDialog(QW.QDialog):
         self._custom_mode_mine_spinbox.valueChanged.connect(self.on_custom_mode_mine_number_change)
 
     def _set_up_mode_selector_buttons(self) -> None:
+        self._easy_mode_button.clicked.connect(self.on_easy_mode_button_click)
+        self._medium_mode_button.clicked.connect(self.on_medium_mode_button_click)
+        self._hard_mode_button.clicked.connect(self.on_hard_mode_button_click)
+        self._custom_mode_start_button.clicked.connect(self.on_custom_mode_start_button_click)
+
         self._custom_mode_button.setCheckable(True)
         self._custom_mode_button.toggled.connect(self._custom_mode_frame.setVisible)
 
     def _set_up_hardcore_mode_selector(self) -> None:
-        hardcore_mode = bool(self._timeout_value)
-        self._hardcore_mode_checkbox.setChecked(bool(self._timeout_value))
+        hardcore_mode = bool(self._time_limit_value)
+        self._hardcore_mode_checkbox.setChecked(bool(self._time_limit_value))
         self._hardcore_mode_spinbox.setMinimum(MINIMUM_TIME_LIMIT)
-        self._hardcore_mode_spinbox.setMaximum(3600)
+        self._hardcore_mode_spinbox.setMaximum(MAXIMUM_TIME_LIMIT)
         self._hardcore_mode_spinbox.setSuffix(' s')
-        self._hardcore_mode_spinbox.setValue(self._timeout_value)
+        self._hardcore_mode_spinbox.setValue(self._get_time_limit_value())
         self._hardcore_mode_spinbox.setEnabled(hardcore_mode)
-        #self._hardcore_mode_checkbox.checkStateChanged.connect(...) # TODO
+        self._hardcore_mode_spinbox.valueChanged.connect(self.on_time_limit_value_change)
+        self._hardcore_mode_checkbox.checkStateChanged.connect(self.on_hardcore_mode_check_state_change)
 
     def _set_up_layout(self) -> None:
         mode_layout = QW.QHBoxLayout()
@@ -126,7 +139,34 @@ class NewGameDialog(QW.QDialog):
         self._custom_mode_mine_value = value
 
     @QC.Slot(QC.Qt.CheckState)
-    def on_hardcore_mode_check_state_change(self, check_state: QC.Qt.CheckState): ...
+    def on_hardcore_mode_check_state_change(self, check_state: QC.Qt.CheckState) -> None:
+        match check_state:
+            case QC.Qt.CheckState.Checked:
+                self._hardcore_mode_spinbox.setEnabled(True)
+                self._time_limit_value = self._hardcore_mode_spinbox.value()
+            case QC.Qt.CheckState.Unchecked | QC.Qt.CheckState.PartiallyChecked:
+                self._hardcore_mode_spinbox.setEnabled(False)
+                self._time_limit_value = 0
+
+    @QC.Slot(int)
+    def on_time_limit_value_change(self, value: int) -> None:
+        self._time_limit_value = value
+
+    @QC.Slot()
+    def on_easy_mode_button_click(self) -> None:
+        self._on_new_game_button_click(self._get_parameters_for_named_mode(GameMode.EASY))
+
+    @QC.Slot()
+    def on_medium_mode_button_click(self) -> None:
+        self._on_new_game_button_click(self._get_parameters_for_named_mode(GameMode.MEDIUM))
+
+    @QC.Slot()
+    def on_hard_mode_button_click(self) -> None:
+        self._on_new_game_button_click(self._get_parameters_for_named_mode(GameMode.HARD))
+
+    @QC.Slot()
+    def on_custom_mode_start_button_click(self) -> None:
+        self._on_new_game_button_click(self._get_parameters_for_custom_mode())
 
     def _update_mine_count_upper_limit(self) -> None:
         size = self._custom_mode_row_value * self._custom_mode_column_value
@@ -134,10 +174,29 @@ class NewGameDialog(QW.QDialog):
         self._custom_mode_mine_spinbox.setMaximum(size - 1)
         self._custom_mode_mine_spinbox.setValue(round(size * PREFERRED_MINE_DENSITY))
 
-    def _get_timeout_value(self) -> int:
-        return self._timeout_value if self._timeout_value >= MINIMUM_TIME_LIMIT else DEFAULT_TIME_LIMIT
+    def _get_time_limit_value(self) -> int:
+        return self._time_limit_value if self._time_limit_value >= MINIMUM_TIME_LIMIT else DEFAULT_TIME_LIMIT
 
-# TODO: Organize this class properly
-# TODO: The hardcore mode spinbox should be disabled unless it is ticked
-# TODO: Start making the buttons actually do something. They should fire a new game signal which contains the params
-# TODO Cont: received by slot in mainwindow which saves the params to json and reinits mainwindow.
+    def _get_parameters_for_named_mode(self, mode: GameMode) -> GameParameters:
+        initial_dict = {}  # Because of a Pycharm bug
+        match mode:
+            case GameMode.EASY:
+                initial_dict = DEFAULT_SETTINGS
+            case GameMode.MEDIUM:
+                initial_dict = MEDIUM_SETTINGS
+            case GameMode.HARD:
+                initial_dict = HARD_SETTINGS
+        params = GameParameters.from_dict(initial_dict, time_limit=self._time_limit_value)
+        return params
+
+    def _get_parameters_for_custom_mode(self) -> GameParameters:
+        return GameParameters(n_rows=self._custom_mode_row_value,
+                              n_cols=self._custom_mode_column_value,
+                              n_mines=self._custom_mode_mine_value,
+                              time_limit_in_seconds=self._time_limit_value)
+
+    def _on_new_game_button_click(self, parameters: GameParameters) -> None:
+        self.start_new_game.emit(parameters)
+        self.accept()
+
+# TODO: Parameter saving

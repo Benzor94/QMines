@@ -13,6 +13,8 @@ class ControlPanel(QW.QToolBar):
         super().__init__('Control panel')
         self._parameters = parameters
 
+        self._new_game_dialog = NewGameDialog(self._parameters, self)
+
         self._new_game_action = self._get_new_game_action()
         self._pause_action = self._get_pause_action()
         self._mine_counter = self._get_mine_counter()
@@ -29,13 +31,13 @@ class ControlPanel(QW.QToolBar):
         self.addAction(self._time_tracker)
         self.setToolButtonStyle(QC.Qt.ToolButtonStyle.ToolButtonTextOnly)
 
+    @property
+    def new_game_dialog(self) -> NewGameDialog:
+        return self._new_game_dialog
+
     @QC.Slot()
     def on_new_game_action(self):
-        ngd = NewGameDialog(self._parameters, self)
-        if ngd.exec():
-            print('Success')
-        else:
-            print('fail')
+        self.new_game_dialog.exec()
 
     def _get_new_game_action(self) -> QG.QAction:
         new_game_action = QG.QAction('New')

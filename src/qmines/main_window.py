@@ -3,25 +3,26 @@ from PySide6.QtCore import Slot
 
 from qmines.board.board import Board
 from qmines.board.tile import Tile
+from qmines.constants import DEFAULT_SETTINGS
 from qmines.control_panel.control_panel import ControlPanel
 from qmines.game_parameters.game_parameters import GameParameters
-from qmines.game_parameters.settings_reader import read_settings
 
 
 class MainWindow(QW.QMainWindow):
 
-    def __init__(self) -> None:
+    def __init__(self, parameters: GameParameters | None) -> None:
         super().__init__()
-        self._parameters: GameParameters
+        self._parameters = parameters
         self._board: Board
         self._control_panel: ControlPanel
         self._frame: QW.QFrame
         self._frame_layout: QW.QVBoxLayout
-        self.set_up()
+        self.set_up(parameters)
     
     def set_up(self, parameters: GameParameters | None = None) -> None:
         if parameters is None:
-            parameters = read_settings()
+            parameters = GameParameters.from_dict(DEFAULT_SETTINGS)
+        self._remove_toolbars()
         self._parameters = parameters
         self._set_toolbar()
         self._frame = QW.QFrame()
@@ -35,7 +36,15 @@ class MainWindow(QW.QMainWindow):
         self.setCentralWidget(self._frame)
         self.show()
 
-    
+    @Slot(GameParameters)
+    def on_new_game(self, parameters: GameParameters) -> None:
+        print(f'Rows: {parameters.n_rows}')
+        print(f'Cols: {parameters.n_cols}')
+        print(f'Mines: {parameters.n_mines}')
+        print(f'Limit: {parameters.time_limit_in_seconds}')
+        self.set_up(parameters)
+        self.adjustSize()
+
     def _board_factory(self) -> Board:
         """Temporary"""
         assert self._parameters is not None
@@ -45,4 +54,10 @@ class MainWindow(QW.QMainWindow):
     def _set_toolbar(self) -> None:
         self._control_panel = ControlPanel(self._parameters)
         self.addToolBar(self._control_panel)
+        self._control_panel.new_game_dialog.start_new_game.connect(self.on_new_game)
+
+    def _remove_toolbars(self) -> None:
+        for tb in self.findChildren(QW.QToolBar):
+            self.removeToolBar(tb)
+
     

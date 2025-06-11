@@ -11,7 +11,7 @@ class TestSettingsReader(unittest.TestCase):
         self.assertEqual(params.n_cols, 8)
         self.assertEqual(params.n_mines, 10)
         self.assertEqual(params.number_of_elements, 64)
-        self.assertEqual(params.timeout_in_seconds, 300)
+        self.assertEqual(params.time_limit_in_seconds, 300)
         self.assertTrue(params.is_hardcore_mode)
     
     def test_game_parameters_exceptions(self) -> None:
