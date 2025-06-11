@@ -49,8 +49,7 @@ class Board(QW.QFrame, AbstractGrid[Tile], metaclass=_ProtocolQWidgetMeta):
         size = event.size()
         height = size.height()
         width = size.width()
-        smallest_is_height = height <= width
-        if smallest_is_height:
+        if height <= width:
             self.resize(QC.QSize(round(height / self._h_to_w_ratio), height))
         else:
             self.resize(QC.QSize(width, round(width * self._h_to_w_ratio)))

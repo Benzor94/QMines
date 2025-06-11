@@ -1,16 +1,10 @@
-from typing import override, Final
-
 import PySide6.QtWidgets as QW
-import PySide6.QtGui as QG
-import PySide6.QtCore as QC
 
 from qmines.board.board import Board
 from qmines.board.tile import Tile
 from qmines.control_panel.control_panel import ControlPanel
 from qmines.game_parameters.game_parameters import GameParameters
 from qmines.game_parameters.settings_reader import read_settings
-from qmines.constants import Symbol
-from qmines.utilities import set_font_size_based_on_height
 
 
 class MainWindow(QW.QMainWindow):
