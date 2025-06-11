@@ -10,9 +10,22 @@ DEFAULT_SETTINGS: Final[MappingProxyType[str, int]] = MappingProxyType({'n_rows'
                                                                         'n_cols': 8,
                                                                         'n_mines': 10,
                                                                         'timeout_in_seconds': 0})
+MEDIUM_SETTINGS: Final[MappingProxyType[str, int]] = MappingProxyType({'n_rows': 16,
+                                                                       'n_cols': 16,
+                                                                       'n_mines': 40,
+                                                                       'timeout_in_seconds': 0})
+HARD_SETTINGS: Final[MappingProxyType[str, int]] = MappingProxyType({'n_rows': 16,
+                                                                     'n_cols': 30,
+                                                                     'n_mines': 99,
+                                                                     'timeout_in_seconds': 0})
 
 CONTROL_PANEL_MIN_HEIGHT: Final[int] = 30
 CONTROL_PANEL_MAX_HEIGHT: Final[int] = 60
+
+BOARD_MIN_SIZE: Final[int] = 4
+BOARD_MAX_SIZE: Final[int] = 30
+
+PREFERRED_MINE_DENSITY: Final[float] = 0.156
 
 class Symbol(Enum):
     MINE = '\U0001F4A3'

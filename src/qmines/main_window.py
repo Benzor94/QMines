@@ -1,4 +1,5 @@
 import PySide6.QtWidgets as QW
+from PySide6.QtCore import Slot
 
 from qmines.board.board import Board
 from qmines.board.tile import Tile
@@ -33,6 +34,7 @@ class MainWindow(QW.QMainWindow):
         self.setSizePolicy(QW.QSizePolicy.Policy.Minimum, QW.QSizePolicy.Policy.Minimum)
         self.setCentralWidget(self._frame)
         self.show()
+
     
     def _board_factory(self) -> Board:
         """Temporary"""
@@ -41,6 +43,6 @@ class MainWindow(QW.QMainWindow):
         return Board(parameters=self._parameters, tiles=tiles)
 
     def _set_toolbar(self) -> None:
-        self._control_panel = ControlPanel()
+        self._control_panel = ControlPanel(self._parameters)
         self.addToolBar(self._control_panel)
     

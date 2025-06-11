@@ -1,5 +1,4 @@
 import json
-from collections.abc import Mapping
 
 from qmines.game_parameters.game_parameters import GameParameters
 from qmines.constants import DEFAULT_SETTINGS, SETTINGS_FILE

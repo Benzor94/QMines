@@ -2,11 +2,11 @@
 
 from typing import Final
 
+from qmines.constants import BOARD_MIN_SIZE, BOARD_MAX_SIZE
+
 
 class GameParameters:
-    MIN_SIZE: Final[int] = 4
-    MAX_SIZE: Final[int] = 30
-    SIZE_RANGE: Final[range] = range(MIN_SIZE, MAX_SIZE + 1)
+    SIZE_RANGE: Final[range] = range(BOARD_MIN_SIZE, BOARD_MAX_SIZE + 1)
 
     def __init__(self, n_rows: int, n_cols: int, n_mines: int, timeout_in_seconds: int) -> None:
         self._n_rows  = n_rows
@@ -41,7 +41,7 @@ class GameParameters:
     @classmethod
     def _verify_length(cls, length: int) -> None:
         if length not in cls.SIZE_RANGE:
-            raise ValueError(f'Length {length} must be in range [{cls.MIN_SIZE}, {cls.MAX_SIZE}].')
+            raise ValueError(f'Length {length} must be in range [{BOARD_MIN_SIZE}, {BOARD_MAX_SIZE}].')
     
     def _verify_mine_number(self) -> None:
         if not 1 <= self._n_mines < self.number_of_elements:
