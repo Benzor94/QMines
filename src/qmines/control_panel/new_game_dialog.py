@@ -18,15 +18,17 @@ class NewGameDialog(QW.QDialog):
     def __init__(self, parameters: GameParameters, parent: QW.QWidget | None = None):
         super().__init__(parent)
         self.setWindowTitle('Set Up New Game')
+
         self._parameters = parameters
         self._custom_mode_column_value = self._parameters.n_cols
         self._custom_mode_row_value = self._parameters.n_rows
         self._custom_mode_mine_value = self._parameters.n_mines
+        self._timeout_value = self._parameters.timeout_in_seconds
 
-        self._easy_mode = QW.QPushButton(self.__class__.EASY_TEXT)
-        self._medium_mode = QW.QPushButton(self.__class__.MED_TEXT)
-        self._hard_mode = QW.QPushButton(self.__class__.HARD_TEXT)
-        self._custom_mode = QW.QPushButton(self.__class__.CUSTOM_TEXT)
+        self._easy_mode_button = QW.QPushButton(self.__class__.EASY_TEXT)
+        self._medium_mode_button = QW.QPushButton(self.__class__.MED_TEXT)
+        self._hard_mode_button = QW.QPushButton(self.__class__.HARD_TEXT)
+        self._custom_mode_button = QW.QPushButton(self.__class__.CUSTOM_TEXT)
 
         self._custom_mode_frame = QW.QFrame()
         self._custom_mode_column_label = QW.QLabel('Columns: ')
@@ -37,16 +39,15 @@ class NewGameDialog(QW.QDialog):
         self._custom_mode_mine_spinbox = QW.QSpinBox()
         self._custom_mode_start_button = QW.QPushButton('Start custom game')
 
-        self._cancel = QW.QPushButton('Cancel')
         self._buttonbox = QW.QDialogButtonBox(QW.QDialogButtonBox.StandardButton.Cancel)
         self._buttonbox.rejected.connect(self.reject)
 
-        self._hardcore_mode = QW.QCheckBox('Hardcore mode')
-        self._hardcore_mode_time = QW.QSpinBox()
+        self._hardcore_mode_checkbox = QW.QCheckBox('Hardcore mode')
+        self._hardcore_mode_spinbox = QW.QSpinBox()
 
         self._set_up_mode_selector_buttons()
         self._set_up_custom_mode_selector()
-        self._set_up_hardcore_mode()
+        self._set_up_hardcore_mode_selector()
         self._set_up_layout()
 
     def _set_up_custom_mode_selector(self) -> None:
@@ -67,21 +68,25 @@ class NewGameDialog(QW.QDialog):
         self._custom_mode_mine_spinbox.valueChanged.connect(self.on_custom_mode_mine_number_change)
 
     def _set_up_mode_selector_buttons(self) -> None:
-        self._custom_mode.setCheckable(True)
-        self._custom_mode.toggled.connect(self._custom_mode_frame.setVisible)
+        self._custom_mode_button.setCheckable(True)
+        self._custom_mode_button.toggled.connect(self._custom_mode_frame.setVisible)
 
-    def _set_up_hardcore_mode(self) -> None:
-        self._hardcore_mode_time.setMinimum(0)
-        self._hardcore_mode_time.setMaximum(3600)
-        self._hardcore_mode_time.setSuffix(' s')
-        self._hardcore_mode_time.setValue(120)
+    def _set_up_hardcore_mode_selector(self) -> None:
+        hardcore_mode = bool(self._timeout_value)
+        self._hardcore_mode_checkbox.setChecked(bool(self._timeout_value))
+        self._hardcore_mode_spinbox.setMinimum(0)
+        self._hardcore_mode_spinbox.setMaximum(3600)
+        self._hardcore_mode_spinbox.setSuffix(' s')
+        self._hardcore_mode_spinbox.setValue(self._timeout_value)
+        self._hardcore_mode_spinbox.setEnabled(hardcore_mode)
+        #self._hardcore_mode_checkbox.checkStateChanged.connect(...) # TODO
 
     def _set_up_layout(self) -> None:
         mode_layout = QW.QHBoxLayout()
-        mode_layout.addWidget(self._easy_mode)
-        mode_layout.addWidget(self._medium_mode)
-        mode_layout.addWidget(self._hard_mode)
-        mode_layout.addWidget(self._custom_mode)
+        mode_layout.addWidget(self._easy_mode_button)
+        mode_layout.addWidget(self._medium_mode_button)
+        mode_layout.addWidget(self._hard_mode_button)
+        mode_layout.addWidget(self._custom_mode_button)
 
         custom_layout = QW.QGridLayout()
         custom_layout.addWidget(self._custom_mode_column_label, 0, 0)
@@ -95,8 +100,8 @@ class NewGameDialog(QW.QDialog):
         self._custom_mode_frame.setVisible(False)
 
         hc_mode_layout = QW.QHBoxLayout()
-        hc_mode_layout.addWidget(self._hardcore_mode)
-        hc_mode_layout.addWidget(self._hardcore_mode_time)
+        hc_mode_layout.addWidget(self._hardcore_mode_checkbox)
+        hc_mode_layout.addWidget(self._hardcore_mode_spinbox)
 
         layout = QW.QVBoxLayout()
         layout.setSizeConstraint(QW.QLayout.SizeConstraint.SetFixedSize)
@@ -119,6 +124,9 @@ class NewGameDialog(QW.QDialog):
     @QC.Slot(int)
     def on_custom_mode_mine_number_change(self, value: int):
         self._custom_mode_mine_value = value
+
+    @QC.Slot(QC.Qt.CheckState)
+    def on_hardcore_mode_check_state_change(self, check_state: QC.Qt.CheckState): ...
 
     def _update_mine_count_upper_limit(self) -> None:
         size = self._custom_mode_row_value * self._custom_mode_column_value
