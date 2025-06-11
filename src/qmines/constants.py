@@ -27,6 +27,10 @@ BOARD_MAX_SIZE: Final[int] = 30
 
 PREFERRED_MINE_DENSITY: Final[float] = 0.156
 
+DEFAULT_TIME_LIMIT: Final[int] = 120
+MINIMUM_TIME_LIMIT: Final[int] = 10
+MAXIMUM_TIME_LIMIT: Final[int] = 3600
+
 class Symbol(Enum):
     MINE = '\U0001F4A3'
     FLAG = '\U0001F6A9'

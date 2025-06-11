@@ -3,7 +3,7 @@ import PySide6.QtCore as QC
 import PySide6.QtGui as QG
 from PySide6.QtCore import Signal
 
-from qmines.constants import BOARD_MIN_SIZE, BOARD_MAX_SIZE, PREFERRED_MINE_DENSITY
+from qmines.constants import BOARD_MIN_SIZE, BOARD_MAX_SIZE, PREFERRED_MINE_DENSITY, DEFAULT_TIME_LIMIT, MINIMUM_TIME_LIMIT
 from qmines.game_parameters.game_parameters import GameParameters
 
 
@@ -42,7 +42,7 @@ class NewGameDialog(QW.QDialog):
         self._buttonbox = QW.QDialogButtonBox(QW.QDialogButtonBox.StandardButton.Cancel)
         self._buttonbox.rejected.connect(self.reject)
 
-        self._hardcore_mode_checkbox = QW.QCheckBox('Hardcore mode')
+        self._hardcore_mode_checkbox = QW.QCheckBox('Time limit')
         self._hardcore_mode_spinbox = QW.QSpinBox()
 
         self._set_up_mode_selector_buttons()
@@ -74,7 +74,7 @@ class NewGameDialog(QW.QDialog):
     def _set_up_hardcore_mode_selector(self) -> None:
         hardcore_mode = bool(self._timeout_value)
         self._hardcore_mode_checkbox.setChecked(bool(self._timeout_value))
-        self._hardcore_mode_spinbox.setMinimum(0)
+        self._hardcore_mode_spinbox.setMinimum(MINIMUM_TIME_LIMIT)
         self._hardcore_mode_spinbox.setMaximum(3600)
         self._hardcore_mode_spinbox.setSuffix(' s')
         self._hardcore_mode_spinbox.setValue(self._timeout_value)
@@ -133,6 +133,9 @@ class NewGameDialog(QW.QDialog):
         self._custom_mode_mine_spinbox.setMinimum(1)
         self._custom_mode_mine_spinbox.setMaximum(size - 1)
         self._custom_mode_mine_spinbox.setValue(round(size * PREFERRED_MINE_DENSITY))
+
+    def _get_timeout_value(self) -> int:
+        return self._timeout_value if self._timeout_value >= MINIMUM_TIME_LIMIT else DEFAULT_TIME_LIMIT
 
 # TODO: Organize this class properly
 # TODO: The hardcore mode spinbox should be disabled unless it is ticked
