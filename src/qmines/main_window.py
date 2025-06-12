@@ -43,6 +43,13 @@ class MainWindow(QW.QMainWindow):
         self.adjustSize()
         write_settings(parameters)
 
+    @Slot(bool)
+    def on_pause(self, paused: bool) -> None:
+        if paused:
+            self._board.hide()
+        else:
+            self._board.show()
+
     def _board_factory(self) -> Board:
         """Temporary"""
         assert self._parameters is not None
@@ -53,6 +60,7 @@ class MainWindow(QW.QMainWindow):
         self._control_panel = ControlPanel(self._parameters)
         self.addToolBar(self._control_panel)
         self._control_panel.new_game_dialog.start_new_game.connect(self.on_new_game)
+        self._control_panel.pause_state_change.connect(self.on_pause)
 
     def _remove_toolbars(self) -> None:
         for tb in self.findChildren(QW.QToolBar):

@@ -19,9 +19,6 @@ HARD_SETTINGS: Final[MappingProxyType[str, int]] = MappingProxyType({'n_rows': 1
                                                                      'n_mines': 99,
                                                                      'time_limit_in_seconds': 0})
 
-CONTROL_PANEL_MIN_HEIGHT: Final[int] = 30
-CONTROL_PANEL_MAX_HEIGHT: Final[int] = 60
-
 BOARD_MIN_SIZE: Final[int] = 4
 BOARD_MAX_SIZE: Final[int] = 30
 

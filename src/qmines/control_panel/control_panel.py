@@ -1,6 +1,7 @@
 import PySide6.QtWidgets as QW
 import PySide6.QtGui as QG
 import PySide6.QtCore as QC
+from PySide6.QtCore import Signal
 
 from qmines.constants import Symbol
 from qmines.control_panel.new_game_dialog import NewGameDialog
@@ -9,6 +10,9 @@ from qmines.utilities import set_font_size_based_on_height
 
 
 class ControlPanel(QW.QToolBar):
+
+    pause_state_change = Signal(bool)
+
     def __init__(self, parameters: GameParameters) -> None:
         super().__init__('Control panel')
         self._parameters = parameters
@@ -45,11 +49,12 @@ class ControlPanel(QW.QToolBar):
         new_game_action.triggered.connect(self.on_new_game_action)
         return new_game_action
 
-    @staticmethod
-    def _get_pause_action() -> QG.QAction:
+    def _get_pause_action(self) -> QG.QAction:
         pause_action = QG.QAction(Symbol.PAUSE.value)
         pause_action.setToolTip('Pause/resume the game')
+        pause_action.setCheckable(True)
         set_font_size_based_on_height(pause_action, 30)
+        pause_action.toggled.connect(self.pause_state_change)
         return pause_action
 
     @staticmethod
