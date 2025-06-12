@@ -6,6 +6,7 @@ from qmines.board.tile import Tile
 from qmines.constants import DEFAULT_SETTINGS
 from qmines.control_panel.control_panel import ControlPanel
 from qmines.game_parameters.game_parameters import GameParameters
+from qmines.game_parameters.settings_reader import write_settings
 
 
 class MainWindow(QW.QMainWindow):
@@ -38,12 +39,9 @@ class MainWindow(QW.QMainWindow):
 
     @Slot(GameParameters)
     def on_new_game(self, parameters: GameParameters) -> None:
-        print(f'Rows: {parameters.n_rows}')
-        print(f'Cols: {parameters.n_cols}')
-        print(f'Mines: {parameters.n_mines}')
-        print(f'Limit: {parameters.time_limit_in_seconds}')
         self.set_up(parameters)
         self.adjustSize()
+        write_settings(parameters)
 
     def _board_factory(self) -> Board:
         """Temporary"""
