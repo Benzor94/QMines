@@ -3,12 +3,18 @@ import PySide6.QtGui as QG
 import PySide6.QtCore as QC
 
 from qmines.constants import Symbol
+from qmines.control_panel.new_game_dialog import NewGameDialog
+from qmines.game_parameters.game_parameters import GameParameters
 from qmines.utilities import set_font_size_based_on_height
 
 
 class ControlPanel(QW.QToolBar):
-    def __init__(self) -> None:
+    def __init__(self, parameters: GameParameters) -> None:
         super().__init__('Control panel')
+        self._parameters = parameters
+
+        self._new_game_dialog = NewGameDialog(self._parameters, self)
+
         self._new_game_action = self._get_new_game_action()
         self._pause_action = self._get_pause_action()
         self._mine_counter = self._get_mine_counter()
@@ -25,10 +31,18 @@ class ControlPanel(QW.QToolBar):
         self.addAction(self._time_tracker)
         self.setToolButtonStyle(QC.Qt.ToolButtonStyle.ToolButtonTextOnly)
 
-    @staticmethod
-    def _get_new_game_action() -> QG.QAction:
+    @property
+    def new_game_dialog(self) -> NewGameDialog:
+        return self._new_game_dialog
+
+    @QC.Slot()
+    def on_new_game_action(self):
+        self.new_game_dialog.exec()
+
+    def _get_new_game_action(self) -> QG.QAction:
         new_game_action = QG.QAction('New')
         new_game_action.setToolTip('Start a new game')
+        new_game_action.triggered.connect(self.on_new_game_action)
         return new_game_action
 
     @staticmethod
