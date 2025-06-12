@@ -1,15 +1,25 @@
+from enum import Enum
+
 import PySide6.QtWidgets as QW
-from PySide6.QtCore import Slot
+from PySide6.QtCore import Slot, Signal
 
 from qmines.board.board import Board
 from qmines.board.tile import Tile
-from qmines.constants import DEFAULT_SETTINGS
+from qmines.utilities.constants import DEFAULT_SETTINGS
 from qmines.control_panel.control_panel import ControlPanel
 from qmines.game_parameters.game_parameters import GameParameters
 from qmines.game_parameters.settings_reader import write_settings
+from qmines.utilities.index_tools import convert_index_to_coordinates
 
+class GameOver(Enum):
+    WIN = 0
+    MINE_EXPLODED = 1
+    TIME_RAN_OUT = 2
 
 class MainWindow(QW.QMainWindow):
+
+    game_over = Signal(GameOver)
+    game_start = Signal(int, int)
 
     def __init__(self, parameters: GameParameters | None) -> None:
         super().__init__()
@@ -51,9 +61,8 @@ class MainWindow(QW.QMainWindow):
             self._board.show()
 
     def _board_factory(self) -> Board:
-        """Temporary"""
-        assert self._parameters is not None
-        tiles = [Tile((idx // self._parameters.n_cols, idx % self._parameters.n_cols)) for idx in range(self._parameters.number_of_elements)]
+        tiles = [Tile(convert_index_to_coordinates(idx, self._parameters.n_rows, self._parameters.n_cols))
+                 for idx in range(self._parameters.number_of_elements)]
         return Board(parameters=self._parameters, tiles=tiles)
 
     def _set_toolbar(self) -> None:
@@ -61,6 +70,7 @@ class MainWindow(QW.QMainWindow):
         self.addToolBar(self._control_panel)
         self._control_panel.new_game_dialog.start_new_game.connect(self.on_new_game)
         self._control_panel.pause_state_change.connect(self.on_pause)
+        self.game_over.connect(self._control_panel.on_game_over)
 
     def _remove_toolbars(self) -> None:
         for tb in self.findChildren(QW.QToolBar):

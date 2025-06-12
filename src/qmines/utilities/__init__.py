@@ -1,5 +1,5 @@
-import PySide6.QtWidgets as QW
-from PySide6.QtGui import QFont, QAction
+from PySide6 import QtWidgets as QW
+from PySide6.QtGui import QAction, QFont
 
 
 def set_font_size_based_on_height(widget: QW.QWidget | QAction, height: int) -> None:

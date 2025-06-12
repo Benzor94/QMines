@@ -3,7 +3,7 @@ import PySide6.QtGui as QG
 import PySide6.QtCore as QC
 from PySide6.QtCore import Signal
 
-from qmines.constants import Symbol
+from qmines.utilities.constants import Symbol
 from qmines.control_panel.new_game_dialog import NewGameDialog
 from qmines.game_parameters.game_parameters import GameParameters
 from qmines.utilities import set_font_size_based_on_height
@@ -42,6 +42,11 @@ class ControlPanel(QW.QToolBar):
     @QC.Slot()
     def on_new_game_action(self):
         self.new_game_dialog.exec()
+
+    @QC.Slot()
+    def on_game_over(self):
+        self._pause_action.setChecked(False)
+        self._pause_action.setEnabled(False)
 
     def _get_new_game_action(self) -> QG.QAction:
         new_game_action = QG.QAction('New')
