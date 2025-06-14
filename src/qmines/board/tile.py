@@ -32,6 +32,8 @@ class Tile(QW.QPushButton):
 
         self.setSizePolicy(QW.QSizePolicy.Policy.Minimum, QW.QSizePolicy.Policy.Minimum)
         set_font_size_based_on_height(self, self.size().height())
+        self.left_clicked.connect(self.on_left_click)
+        self.right_clicked.connect(self.on_right_click)
     
     @property
     def coordinates(self) -> tuple[int, int]:
@@ -57,8 +59,10 @@ class Tile(QW.QPushButton):
     def on_left_click(self) -> None:
         if not StateTracker.game_is_active:
             self.first_click_in_game.emit(*self.coordinates)
+            self.setDown(False)
         elif not self.isDown():
-            ...
+            self.setDown(True)
+            self.tile_revealed.emit(*self.coordinates, self._is_mine)
         else:
             ...
 
@@ -67,4 +71,6 @@ class Tile(QW.QPushButton):
         ...
 
     @QC.Slot(int, int)
-    def on_game_start(self, i: int, j: int) -> None: ...
+    def on_game_start(self, i: int, j: int) -> None:
+        if (i, j) == self._coordinates:
+            self.on_left_click()
