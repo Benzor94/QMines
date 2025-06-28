@@ -1,5 +1,5 @@
 from collections.abc import Iterator, Sequence
-from typing import Protocol, override
+from typing import override
 
 import PySide6.QtWidgets as QW
 import PySide6.QtCore as QC
@@ -7,14 +7,10 @@ import PySide6.QtGui as QG
 
 from qmines.board.tile import Tile
 from qmines.game_parameters.game_parameters import GameParameters
-from qmines.grid.abstract_grid import AbstractGrid
+from qmines.utilities.index_tools import convert_coordinates_to_index
 
-QWidgetMeta = type(QW.QWidget)
-ProtocolMeta = type(Protocol)
 
-class _ProtocolQWidgetMeta(QWidgetMeta, ProtocolMeta): ... # type: ignore
-
-class Board(QW.QFrame, AbstractGrid[Tile], metaclass=_ProtocolQWidgetMeta):
+class Board(QW.QFrame):
 
     def __init__(self, parameters: GameParameters, tiles: Sequence[Tile]) -> None:
         super().__init__()
@@ -26,21 +22,17 @@ class Board(QW.QFrame, AbstractGrid[Tile], metaclass=_ProtocolQWidgetMeta):
         self._set_layout_properties()
     
     @property
-    @override
     def n_rows(self) -> int:
         return self._parameters.n_rows
     
     @property
-    @override
     def n_cols(self) -> int:
         return self._parameters.n_cols
-    
-    @override
-    def __getitem__(self, key: tuple[int, int]) -> Tile:
-        idx = self.to_index(*key)
+
+    def __getitem__(self, coordinates: tuple[int, int]) -> Tile:
+        idx = convert_coordinates_to_index(*coordinates, self.n_rows, self.n_cols)
         return self._tiles[idx]
-    
-    @override
+
     def __iter__(self) -> Iterator[Tile]:
         return iter(self._tiles)
     

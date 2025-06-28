@@ -2,7 +2,7 @@ import json
 from importlib.resources import as_file
 
 from qmines.game_parameters.game_parameters import GameParameters
-from qmines.constants import DEFAULT_SETTINGS, SETTINGS_FILE
+from qmines.utilities.constants import DEFAULT_SETTINGS, SETTINGS_FILE
 
 def read_settings() -> GameParameters:
     try:

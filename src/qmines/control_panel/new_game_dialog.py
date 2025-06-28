@@ -2,10 +2,9 @@ from enum import Enum
 
 import PySide6.QtWidgets as QW
 import PySide6.QtCore as QC
-import PySide6.QtGui as QG
 from PySide6.QtCore import Signal
 
-from qmines.constants import BOARD_MIN_SIZE, BOARD_MAX_SIZE, PREFERRED_MINE_DENSITY, DEFAULT_TIME_LIMIT, \
+from qmines.utilities.constants import BOARD_MIN_SIZE, BOARD_MAX_SIZE, PREFERRED_MINE_DENSITY, DEFAULT_TIME_LIMIT, \
     MINIMUM_TIME_LIMIT, MAXIMUM_TIME_LIMIT, DEFAULT_SETTINGS, MEDIUM_SETTINGS, HARD_SETTINGS
 from qmines.game_parameters.game_parameters import GameParameters
 

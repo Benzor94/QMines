@@ -1,7 +1,7 @@
 from collections.abc import Mapping
 from typing import Final
 
-from qmines.constants import BOARD_MIN_SIZE, BOARD_MAX_SIZE, DEFAULT_SETTINGS
+from qmines.utilities.constants import BOARD_MIN_SIZE, BOARD_MAX_SIZE, DEFAULT_SETTINGS
 
 
 class GameParameters:
