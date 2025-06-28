@@ -47,6 +47,10 @@ class ControlPanel(QW.QToolBar):
     def on_game_over(self):
         self._pause_action.setChecked(False)
         self._pause_action.setEnabled(False)
+    
+    @QC.Slot()
+    def on_game_start(self):
+        self._pause_action.setEnabled(True)
 
     def _get_new_game_action(self) -> QG.QAction:
         new_game_action = QG.QAction('New')
@@ -60,6 +64,7 @@ class ControlPanel(QW.QToolBar):
         pause_action.setCheckable(True)
         set_font_size_based_on_height(pause_action, 30)
         pause_action.toggled.connect(self.pause_state_change)
+        pause_action.setEnabled(False)
         return pause_action
 
     @staticmethod

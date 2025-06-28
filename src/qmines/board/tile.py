@@ -6,6 +6,7 @@ import PySide6.QtGui as QG
 from PySide6.QtCore import Signal
 
 from qmines.utilities import set_font_size_based_on_height
+from qmines.utilities.constants import Symbol
 from qmines.global_state import StateTracker
 
 class MineCountChange(Enum):
@@ -13,7 +14,7 @@ class MineCountChange(Enum):
     REMOVED = -1
 
 class Tile(QW.QPushButton):
-    MIN_SIZE: Final[int] = 30
+    MIN_SIZE: Final[int] = 32
 
     left_clicked = Signal()
     right_clicked = Signal()
@@ -29,6 +30,8 @@ class Tile(QW.QPushButton):
         self._coordinates = coordinates
         self._is_mine = False
         self._is_flagged = False
+        self._is_revealed = False
+        self._proximity_number = -1
 
         self.setSizePolicy(QW.QSizePolicy.Policy.Minimum, QW.QSizePolicy.Policy.Minimum)
         set_font_size_based_on_height(self, self.size().height())
@@ -38,6 +41,22 @@ class Tile(QW.QPushButton):
     @property
     def coordinates(self) -> tuple[int, int]:
         return self._coordinates
+    
+    @property
+    def is_mine(self) -> bool:
+        return self._is_mine
+    @is_mine.setter
+    def is_mine(self, value: bool) -> None:
+        self._is_mine = bool(value)
+    
+    @property
+    def proximity_number(self) -> int:
+        return self._proximity_number
+    @proximity_number.setter
+    def proximity_number(self, value: int) -> None:
+        if not (0 <= value <= 8):
+            raise ValueError(f'Attempted to set an integer outside the range [0, 8] on tile {self._coordinates}')
+        self._proximity_number = value
     
     @override
     def sizeHint(self) -> QC.QSize:
@@ -59,9 +78,10 @@ class Tile(QW.QPushButton):
     def on_left_click(self) -> None:
         if not StateTracker.game_is_active:
             self.first_click_in_game.emit(*self.coordinates)
-            self.setDown(False)
-        elif not self.isDown():
-            self.setDown(True)
+        elif not self._is_revealed:
+            self.setFlat(True)
+            self._is_revealed = True
+            self._set_text_on_reveal_by_left_click()
             self.tile_revealed.emit(*self.coordinates, self._is_mine)
         else:
             ...
@@ -74,3 +94,9 @@ class Tile(QW.QPushButton):
     def on_game_start(self, i: int, j: int) -> None:
         if (i, j) == self._coordinates:
             self.on_left_click()
+    
+    def _set_text_on_reveal_by_left_click(self) -> None:
+        if self._is_mine:
+            self.setText(Symbol.EXPLOSION.value)
+        else:
+            self.setText(str(self._proximity_number))
