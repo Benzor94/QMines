@@ -71,6 +71,7 @@ class Tile(QW.QPushButton):
     def mouseReleaseEvent(self, e: QG.QMouseEvent, /):
         if e.button() == QC.Qt.MouseButton.LeftButton:
             self.left_clicked.emit()
+            self.setDown(False)
         elif e.button() == QC.Qt.MouseButton.RightButton:
             self.right_clicked.emit()
 
