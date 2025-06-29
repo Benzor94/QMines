@@ -1,54 +1,42 @@
-from enum import Enum
-from typing import Final
 from random import sample
+from threading import Lock
 
 import PySide6.QtWidgets as QW
-from PySide6.QtCore import Slot, Signal
+from PySide6.QtCore import Slot, QSize
 
 from qmines.board.board import Board
 from qmines.board.tile import Tile
 from qmines.control_panel.control_panel import ControlPanel
-from qmines.game_parameters.game_parameters import GameParameters
 from qmines.game_parameters.settings_reader import write_settings
+from qmines.status_bar.status_bar import StatusBar
 from qmines.utilities.index_tools import convert_index_to_coordinates, proximity_iterator
-from qmines.global_state import StateTracker
+from qmines.state_processor import StateProcessor, State
 
-class GameOver(Enum):
-    WIN = 0
-    MINE_EXPLODED = 1
-    TIME_RAN_OUT = 2
 
 class MainWindow(QW.QMainWindow):
 
-    game_over = Signal(GameOver)
-    game_start = Signal(int, int)
-
-    STATUS_TEXT_INERT: Final[str] = 'Game inactive'
-    STATUS_TEXT_ACTIVE: Final[str] = 'Game active'
-    STATUS_TEXT_PAUSED: Final[str] = 'Game paused'
-    STATUS_TEXT_FINISHED: Final[str] = 'Game over'
-
-    def __init__(self, parameters: GameParameters) -> None:
+    def __init__(self) -> None:
         super().__init__()
-        self._parameters = parameters
+        self._state_processor = StateProcessor()
+        self._lock = Lock()
+        self._parameters = self._state_processor.parameters
         self._board: Board
         self._control_panel: ControlPanel
-        self._status_bar: QW.QStatusBar
-        self._status_text: QW.QLabel
+        self._status_bar: StatusBar
         self._frame: QW.QFrame
         self._frame_layout: QW.QVBoxLayout
         self._unrevealed_tiles: int
-        self.set_up(parameters)
+        self._set_up_connections()
+        self.set_up()
         # To set non-resizable
         """
         if (l := self.layout()) is not None:
             l.setSizeConstraint(QW.QLayout.SizeConstraint.SetFixedSize)
         """
     
-    def set_up(self, parameters: GameParameters) -> None:
-        StateTracker.game_is_active = False
+    def set_up(self) -> None:
         self._remove_toolbars()
-        self._parameters = parameters
+        self._parameters = self._state_processor.parameters
         self._unrevealed_tiles = self._parameters.number_of_elements
         self._set_toolbar()
         self._set_statusbar()
@@ -62,69 +50,69 @@ class MainWindow(QW.QMainWindow):
         self.setSizePolicy(QW.QSizePolicy.Policy.Minimum, QW.QSizePolicy.Policy.Minimum)
         self.setCentralWidget(self._frame)
         self.show()
+    
+    @Slot(State, State)
+    def on_state_change(self, previous: State, current: State) -> None:
+        match current:
+            case State.INACTIVE:
+                self._on_new_game()
+            case State.ACTIVE:
+                if previous == State.PAUSED:
+                    self._on_pause(False)
+            case State.PAUSED:
+                if previous == State.ACTIVE:
+                    self._on_pause(True)
+            case State.WIN | State.LOSS_TIMEOUT | State.LOSS_MINE_HIT:
+                ...
 
-    @Slot(GameParameters)
-    def on_new_game(self, parameters: GameParameters) -> None:
-        self.set_up(parameters)
-        self.adjustSize()
-        write_settings(parameters)
+    @Slot(int, int)
+    def on_first_click(self, row: int, col: int) -> None:
+        self._set_up_mines(row, col)
+        self._state_processor.state = State.ACTIVE
+        self._board[row, col].on_left_click()
 
-    @Slot(bool)
-    def on_pause(self, paused: bool) -> None:
-        if paused:
-            self._board.hide()
-            self._status_text.setText(self.__class__.STATUS_TEXT_PAUSED)
+    @Slot(int, int)
+    def on_tile_revealed(self, row: int, col: int) -> None:
+        tile = self._board[row, col]
+        print(f'Tile ({row}, {col}) has been revealed. Is mine: {tile.is_mine}')
+        if tile.is_mine:
+            self._state_processor.state = State.LOSS_MINE_HIT
         else:
-            self._board.show()
-            self._status_text.setText(self.__class__.STATUS_TEXT_ACTIVE)
+            with self._lock:
+                self._unrevealed_tiles -= 1
+            if self._unrevealed_tiles == self._parameters.n_mines:
+                self._state_processor.state = State.WIN
+            if self._board[row, col].proximity_number == 0:
+                for neighbour in proximity_iterator(self._board, row, col):
+                    neighbour.left_clicked.emit()
 
     @Slot(int, int)
-    def on_first_click(self, i: int, j: int) -> None:
-        self._set_up_mines(i, j)
-        StateTracker.game_is_active = True
-        self._status_text.setText(self.__class__.STATUS_TEXT_ACTIVE)
-        self.game_start.emit(i, j)
-
-    @Slot(int, int, bool)
-    def on_tile_revealed(self, i: int, j: int, is_mine: bool) -> None:
-        print(f'Tile ({i}, {j}) has been revealed. Is mine: {is_mine}')
-        if self._board[i, j].proximity_number == 0:
-            for neighbour in proximity_iterator(self._board, i, j):
-                neighbour.left_clicked.emit()
-
-    @Slot(int, int)
-    def on_revealed_tile_clicked(self, i: int, j: int) -> None:
-        ...
+    def on_revealed_tile_clicked(self, row: int, col: int) -> None:
+        clicked_tile = self._board[row, col]
+        proximity = clicked_tile.proximity_number
+        number_of_nearby_flags = sum(1 for t in proximity_iterator(self._board, row, col) if not t.is_revealed and t.is_flagged)
+        if proximity == number_of_nearby_flags:
+            for tile in (t for t in proximity_iterator(self._board, row, col) if not t.is_revealed):
+                tile.on_left_click()
 
     def _set_board(self) -> None:
         tiles = [self._tile_factory(idx) for idx in range(self._parameters.number_of_elements)]
-        self._board = Board(parameters=self._parameters, tiles=tiles)
+        self._board = Board(tiles)
 
     def _set_toolbar(self) -> None:
-        self._control_panel = ControlPanel(self._parameters)
+        self._control_panel = ControlPanel()
         self.addToolBar(self._control_panel)
-        self._control_panel.new_game_dialog.start_new_game.connect(self.on_new_game)
-        self._control_panel.pause_state_change.connect(self.on_pause)
-        self.game_over.connect(self._control_panel.on_game_over)
-        self.game_start.connect(self._control_panel.on_game_start)
 
     def _remove_toolbars(self) -> None:
         for tb in self.findChildren(QW.QToolBar):
             self.removeToolBar(tb)
     
     def _set_statusbar(self) -> None:
-        self._status_bar = QW.QStatusBar()
-        self._status_text = QW.QLabel(self.__class__.STATUS_TEXT_INERT)
-        self._status_bar.addPermanentWidget(self._status_text)
-        self._status_bar.setSizeGripEnabled(False)
+        self._status_bar = StatusBar()
         self.setStatusBar(self._status_bar)
 
     def _tile_factory(self, idx: int) -> Tile:
         tile = Tile(convert_index_to_coordinates(idx, self._parameters.n_rows, self._parameters.n_cols))
-        tile.first_click_in_game.connect(self.on_first_click)
-        tile.tile_revealed.connect(self.on_tile_revealed)
-        tile.revealed_tile_clicked.connect(self.on_revealed_tile_clicked)
-        self.game_start.connect(tile.on_game_start)
         return tile
 
     def _set_up_mines(self, clicked_row: int, clicked_column: int) -> None:
@@ -137,5 +125,33 @@ class MainWindow(QW.QMainWindow):
                 if t.is_mine:
                     proximity_number += 1
             tile.proximity_number = proximity_number
+
+    def _resize_slightly(self) -> None:
+        # To get rid of some size-based artifacts.
+        # Works for unpause but not when new game is started.
+        size = self.size()
+        height = size.height()
+        width = size.width()
+        self.resize(QSize(width + 1, height + 1))
+        self.resize(QSize(width, height))
+    
+    def _on_new_game(self) -> None:
+        self.set_up()
+        self.adjustSize()
+        write_settings(self._state_processor.parameters)
+        self._resize_slightly()
+    
+    def _on_pause(self, paused: bool) -> None:
+        if paused:
+            self._board.hide()
+        else:
+            self._board.show()
+            self._resize_slightly()
+    
+    def _set_up_connections(self) -> None:
+        self._state_processor.state_change.connect(self.on_state_change)
+        self._state_processor.first_click.connect(self.on_first_click)
+        self._state_processor.tile_revealed.connect(self.on_tile_revealed)
+        self._state_processor.revealed_tile_clicked.connect(self.on_revealed_tile_clicked)
 
     

@@ -1,39 +1,31 @@
 import PySide6.QtWidgets as QW
 import PySide6.QtGui as QG
 import PySide6.QtCore as QC
-from PySide6.QtCore import Signal
 
+from qmines.state_processor import State, StateProcessor
 from qmines.utilities.constants import Symbol
 from qmines.control_panel.new_game_dialog import NewGameDialog
-from qmines.game_parameters.game_parameters import GameParameters
 from qmines.utilities import set_font_size_based_on_height
 
 
 class ControlPanel(QW.QToolBar):
 
-    pause_state_change = Signal(bool)
-
-    def __init__(self, parameters: GameParameters) -> None:
+    def __init__(self) -> None:
         super().__init__('Control panel')
-        self._parameters = parameters
+        self._state_processor = StateProcessor()
 
-        self._new_game_dialog = NewGameDialog(self._parameters, self)
+        self._new_game_dialog = NewGameDialog(self)
 
         self._new_game_action = self._get_new_game_action()
         self._pause_action = self._get_pause_action()
-        self._mine_counter = self._get_mine_counter()
-        self._time_tracker = self._get_time_tracker()
         self.toggleViewAction().setEnabled(False)
         self.setMovable(False)
 
         self.addAction(self._new_game_action)
         self.addSeparator()
         self.addAction(self._pause_action)
-        self.addWidget(self._get_spacer())
-        self.addAction(self._mine_counter)
-        self.addSeparator()
-        self.addAction(self._time_tracker)
         self.setToolButtonStyle(QC.Qt.ToolButtonStyle.ToolButtonTextOnly)
+        self._state_processor.state_change.connect(self.on_state_change)
 
     @property
     def new_game_dialog(self) -> NewGameDialog:
@@ -42,15 +34,23 @@ class ControlPanel(QW.QToolBar):
     @QC.Slot()
     def on_new_game_action(self):
         self.new_game_dialog.exec()
-
-    @QC.Slot()
-    def on_game_over(self):
-        self._pause_action.setChecked(False)
-        self._pause_action.setEnabled(False)
     
-    @QC.Slot()
-    def on_game_start(self):
-        self._pause_action.setEnabled(True)
+    @QC.Slot(bool)
+    def on_pause_state_change(self, paused: bool) -> None:
+        if paused:
+            self._state_processor.state = State.PAUSED
+        else:
+            self._state_processor.state = State.ACTIVE
+    
+    @QC.Slot(State, State)
+    def on_state_change(self, previous: State, current: State) -> None:
+        match current:
+            case State.ACTIVE:
+                if previous == State.INACTIVE:
+                    self._pause_action.setEnabled(True)
+            case State.WIN | State.LOSS_MINE_HIT | State.LOSS_TIMEOUT:
+                self._pause_action.setChecked(False)
+                self._pause_action.setEnabled(False)
 
     def _get_new_game_action(self) -> QG.QAction:
         new_game_action = QG.QAction('New')
@@ -63,24 +63,6 @@ class ControlPanel(QW.QToolBar):
         pause_action.setToolTip('Pause/resume the game')
         pause_action.setCheckable(True)
         set_font_size_based_on_height(pause_action, 30)
-        pause_action.toggled.connect(self.pause_state_change)
+        pause_action.toggled.connect(self.on_pause_state_change)
         pause_action.setEnabled(False)
         return pause_action
-
-    @staticmethod
-    def _get_spacer() -> QW.QWidget:
-        spacer = QW.QWidget()
-        spacer.setSizePolicy(QW.QSizePolicy.Policy.Expanding, QW.QSizePolicy.Policy.Preferred)
-        return spacer
-
-    @staticmethod
-    def _get_mine_counter() -> QG.QAction:
-        mine_counter = QG.QAction(f'{Symbol.MINE.value}: 3 / 10')
-        mine_counter.setToolTip('Flagged mines / total')
-        return mine_counter
-
-    @staticmethod
-    def _get_time_tracker() -> QG.QAction:
-        time_tracker = QG.QAction(f'{Symbol.TIMER.value}: 120 / {Symbol.INFINITY.value}')
-        time_tracker.setToolTip('Seconds spent in current game / time limit')
-        return time_tracker

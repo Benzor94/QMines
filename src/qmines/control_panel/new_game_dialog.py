@@ -2,10 +2,10 @@ from enum import Enum
 
 import PySide6.QtWidgets as QW
 import PySide6.QtCore as QC
-from PySide6.QtCore import Signal
 
-from qmines.utilities.constants import BOARD_MIN_SIZE, BOARD_MAX_SIZE, PREFERRED_MINE_DENSITY, DEFAULT_TIME_LIMIT, \
-    MINIMUM_TIME_LIMIT, MAXIMUM_TIME_LIMIT, DEFAULT_SETTINGS, MEDIUM_SETTINGS, HARD_SETTINGS
+from qmines.state_processor import State, StateProcessor
+from qmines.utilities.constants import BOARD_MIN_LENGTH, BOARD_MAX_LENGTH, PREFERRED_MINE_DENSITY, DEFAULT_TIME_LIMIT, \
+    MINIMUM_TIME_LIMIT, MAXIMUM_TIME_LIMIT, EASY_SETTINGS, MEDIUM_SETTINGS, HARD_SETTINGS
 from qmines.game_parameters.game_parameters import GameParameters
 
 class GameMode(Enum):
@@ -19,13 +19,12 @@ class NewGameDialog(QW.QDialog):
     HARD_TEXT = 'Hard\n(30 x 16, 99 mines)'
     CUSTOM_TEXT = 'Custom\n(Set manually)'
 
-    start_new_game = Signal(GameParameters)
-
-    def __init__(self, parameters: GameParameters, parent: QW.QWidget | None = None):
+    def __init__(self, parent: QW.QWidget | None = None):
         super().__init__(parent)
         self.setWindowTitle('Set Up New Game')
 
-        self._parameters = parameters
+        self._state_processor = StateProcessor()
+        self._parameters = self._state_processor.parameters
         self._custom_mode_column_value = self._parameters.n_cols
         self._custom_mode_row_value = self._parameters.n_rows
         self._custom_mode_mine_value = self._parameters.n_mines
@@ -57,12 +56,12 @@ class NewGameDialog(QW.QDialog):
         self._set_up_layout()
 
     def _set_up_custom_mode_selector(self) -> None:
-        self._custom_mode_column_spinbox.setMinimum(BOARD_MIN_SIZE)
-        self._custom_mode_column_spinbox.setMaximum(BOARD_MAX_SIZE)
+        self._custom_mode_column_spinbox.setMinimum(BOARD_MIN_LENGTH)
+        self._custom_mode_column_spinbox.setMaximum(BOARD_MAX_LENGTH)
         self._custom_mode_column_spinbox.setValue(self._custom_mode_column_value)
 
-        self._custom_mode_row_spinbox.setMinimum(BOARD_MIN_SIZE)
-        self._custom_mode_row_spinbox.setMaximum(BOARD_MAX_SIZE)
+        self._custom_mode_row_spinbox.setMinimum(BOARD_MIN_LENGTH)
+        self._custom_mode_row_spinbox.setMaximum(BOARD_MAX_LENGTH)
         self._custom_mode_row_spinbox.setValue(self._custom_mode_row_value)
 
         self._custom_mode_mine_spinbox.setMinimum(1)
@@ -180,7 +179,7 @@ class NewGameDialog(QW.QDialog):
         initial_dict = {}  # Because of a Pycharm bug
         match mode:
             case GameMode.EASY:
-                initial_dict = DEFAULT_SETTINGS
+                initial_dict = EASY_SETTINGS
             case GameMode.MEDIUM:
                 initial_dict = MEDIUM_SETTINGS
             case GameMode.HARD:
@@ -195,7 +194,8 @@ class NewGameDialog(QW.QDialog):
                               time_limit_in_seconds=self._time_limit_value)
 
     def _on_new_game_button_click(self, parameters: GameParameters) -> None:
-        self.start_new_game.emit(parameters)
+        self._state_processor.parameters = parameters
+        self._state_processor.state = State.INACTIVE
         self.accept()
 
 # TODO: Parameter saving

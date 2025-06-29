@@ -1,14 +1,13 @@
-* Mine tracker and time tracker should be status bar QLabel widgets (research how qlabel positioning can be added in statusbar)
 
-* Game states should be INERT, ACTIVE, PAUSED, GAME_OVER. The global state tracker should be a class with an instance as a global variable and should have
-    these as states. Or maybe GAME_OVER should be split into LOSS and WIN or maybe even TIMEOUT, EXPLODED and WIN.
-    The status bar text displaying the current game status should be defined here.
-
-* Clean up unused stuff (for example, the abstract grid thingy is not used anymore, its replacement is in utilities.index_tools)
-
-* Try fixing the size artifacts by triggering a resize on new game and unpause
+* Try fixing the size artifacts by triggering a resize on new game and unpause [done but doesn't work on new game]
 
 * Find a consistent way of including constants. Many are in the constants module but some are classvars. I think any constant that is only used in one class
     should be a classvar and any constant used in multiple places should be a global variable in the constants module.
 
 * Settings json should not be checked into git repo. It should instead but a settings.json into ~/.config/QMines (look up macos and win analogues).
+
+* Do the time tracker.
+
+* Refactor, make code prettier, order the methods appropriately, config and run ruff, make things a bit more elegant
+
+* Add dialogue for game over (win or loss)

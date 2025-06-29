@@ -2,14 +2,14 @@ import json
 from importlib.resources import as_file
 
 from qmines.game_parameters.game_parameters import GameParameters
-from qmines.utilities.constants import DEFAULT_SETTINGS, SETTINGS_FILE
+from qmines.utilities.constants import EASY_SETTINGS, SETTINGS_FILE
 
 def read_settings() -> GameParameters:
     try:
         parameters_dict = json.loads(SETTINGS_FILE.read_text())
-        parameters = GameParameters(**parameters_dict)
+        parameters = GameParameters.from_dict(parameters_dict)
     except (FileNotFoundError, ValueError, TypeError):
-        parameters = GameParameters(**DEFAULT_SETTINGS)
+        parameters = GameParameters.from_dict(EASY_SETTINGS)
     return parameters
 
 def write_settings(parameters: GameParameters) -> None:
