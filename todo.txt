@@ -6,8 +6,6 @@
 
 * Settings json should not be checked into git repo. It should instead but a settings.json into ~/.config/QMines (look up macos and win analogues).
 
-* Do the time tracker.
-
 * Refactor, make code prettier, order the methods appropriately, config and run ruff, make things a bit more elegant (especially for new game dialog which is a mess)
 
 * Add dialogue for game over (win or loss)
