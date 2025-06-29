@@ -21,18 +21,12 @@ class ControlPanel(QW.QToolBar):
 
         self._new_game_action = self._get_new_game_action()
         self._pause_action = self._get_pause_action()
-        self._mine_counter = self._get_mine_counter()
-        self._time_tracker = self._get_time_tracker()
         self.toggleViewAction().setEnabled(False)
         self.setMovable(False)
 
         self.addAction(self._new_game_action)
         self.addSeparator()
         self.addAction(self._pause_action)
-        self.addWidget(self._get_spacer())
-        self.addAction(self._mine_counter)
-        self.addSeparator()
-        self.addAction(self._time_tracker)
         self.setToolButtonStyle(QC.Qt.ToolButtonStyle.ToolButtonTextOnly)
 
     @property
@@ -66,21 +60,3 @@ class ControlPanel(QW.QToolBar):
         pause_action.toggled.connect(self.pause_state_change)
         pause_action.setEnabled(False)
         return pause_action
-
-    @staticmethod
-    def _get_spacer() -> QW.QWidget:
-        spacer = QW.QWidget()
-        spacer.setSizePolicy(QW.QSizePolicy.Policy.Expanding, QW.QSizePolicy.Policy.Preferred)
-        return spacer
-
-    @staticmethod
-    def _get_mine_counter() -> QG.QAction:
-        mine_counter = QG.QAction(f'{Symbol.MINE.value}: 3 / 10')
-        mine_counter.setToolTip('Flagged mines / total')
-        return mine_counter
-
-    @staticmethod
-    def _get_time_tracker() -> QG.QAction:
-        time_tracker = QG.QAction(f'{Symbol.TIMER.value}: 120 / {Symbol.INFINITY.value}')
-        time_tracker.setToolTip('Seconds spent in current game / time limit')
-        return time_tracker

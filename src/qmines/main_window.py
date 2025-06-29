@@ -2,7 +2,7 @@ from enum import Enum
 from random import sample
 
 import PySide6.QtWidgets as QW
-from PySide6.QtCore import Slot, Signal
+from PySide6.QtCore import Slot, Signal, QSize
 
 from qmines.board.board import Board
 from qmines.board.tile import Tile
@@ -63,6 +63,7 @@ class MainWindow(QW.QMainWindow):
         self.set_up(parameters)
         self.adjustSize()
         write_settings(parameters)
+        self._resize_slightly()
 
     @Slot(bool)
     def on_pause(self, paused: bool) -> None:
@@ -72,6 +73,7 @@ class MainWindow(QW.QMainWindow):
             self._status_bar.status_text.setText(self._signal_node.state.value)
         else:
             self._board.show()
+            self._resize_slightly()
             self._signal_node.state = State.ACTIVE
             self._status_bar.status_text.setText(self._signal_node.state.value)
 
@@ -132,4 +134,12 @@ class MainWindow(QW.QMainWindow):
                     proximity_number += 1
             tile.proximity_number = proximity_number
 
+    def _resize_slightly(self) -> None:
+        # To get rid of some size-based artifacts.
+        # Works for unpause but not when new game is started.
+        size = self.size()
+        height = size.height()
+        width = size.width()
+        self.resize(QSize(width + 1, height + 1))
+        self.resize(QSize(width, height))
     
