@@ -62,8 +62,8 @@ class MainWindow(QW.QMainWindow):
             case State.PAUSED:
                 if previous == State.ACTIVE:
                     self._on_pause(True)
-            case State.WIN | State.LOSS_TIMEOUT | State.LOSS_MINE_HIT:
-                ...
+            case _:
+                return
 
     @Slot(int, int)
     def on_first_click(self, row: int, col: int) -> None:
@@ -82,6 +82,7 @@ class MainWindow(QW.QMainWindow):
                 self._unrevealed_tiles -= 1
             if self._unrevealed_tiles == self._parameters.n_mines:
                 self._state_processor.state = State.WIN
+                return
             if self._board[row, col].proximity_number == 0:
                 for neighbour in proximity_iterator(self._board, row, col):
                     neighbour.left_clicked.emit()
