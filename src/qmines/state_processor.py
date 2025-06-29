@@ -10,7 +10,7 @@ class State(Enum):
     PAUSED = 'Paused'
     WIN = 'Win'
     LOSS_MINE_HIT = 'Loss (hit mine)'
-    LOSS_TIMEOUT = 'Lost (timeout)'
+    LOSS_TIMEOUT = 'Loss (timeout)'
 
 class FlagCountChange(Enum):
     ADDED = 1
