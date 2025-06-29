@@ -1,6 +1,6 @@
 {
-  "n_rows": 8,
-  "n_cols": 8,
-  "n_mines": 10,
+  "n_rows": 16,
+  "n_cols": 30,
+  "n_mines": 99,
   "time_limit_in_seconds": 0
 }

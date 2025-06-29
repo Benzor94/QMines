@@ -9,6 +9,7 @@ from qmines.board.tile import Tile
 from qmines.control_panel.control_panel import ControlPanel
 from qmines.game_parameters.game_parameters import GameParameters
 from qmines.game_parameters.settings_reader import write_settings
+from qmines.status_bar.status_bar import StatusBar
 from qmines.utilities.index_tools import convert_index_to_coordinates, proximity_iterator
 from qmines.state_processor import StateProcessor, State
 
@@ -28,8 +29,7 @@ class MainWindow(QW.QMainWindow):
         self._parameters = parameters
         self._board: Board
         self._control_panel: ControlPanel
-        self._status_bar: QW.QStatusBar
-        self._status_text: QW.QLabel
+        self._status_bar: StatusBar
         self._frame: QW.QFrame
         self._frame_layout: QW.QVBoxLayout
         self._unrevealed_tiles: int
@@ -69,17 +69,17 @@ class MainWindow(QW.QMainWindow):
         if paused:
             self._board.hide()
             self._signal_node.state = State.PAUSED
-            self._status_text.setText(self._signal_node.state.value)
+            self._status_bar.status_text.setText(self._signal_node.state.value)
         else:
             self._board.show()
             self._signal_node.state = State.ACTIVE
-            self._status_text.setText(self._signal_node.state.value)
+            self._status_bar.status_text.setText(self._signal_node.state.value)
 
     @Slot(int, int)
     def on_first_click(self, i: int, j: int) -> None:
         self._set_up_mines(i, j)
         self._signal_node.state = State.ACTIVE
-        self._status_text.setText(self._signal_node.state.value)
+        self._status_bar.status_text.setText(self._signal_node.state.value)
         self.game_start.emit(i, j)
 
     @Slot(int, int, bool)
@@ -110,10 +110,7 @@ class MainWindow(QW.QMainWindow):
             self.removeToolBar(tb)
     
     def _set_statusbar(self) -> None:
-        self._status_bar = QW.QStatusBar()
-        self._status_text = QW.QLabel(self._signal_node.state.value)
-        self._status_bar.addWidget(self._status_text)
-        self._status_bar.setSizeGripEnabled(False)
+        self._status_bar = StatusBar(self._parameters)
         self.setStatusBar(self._status_bar)
 
     def _tile_factory(self, idx: int) -> Tile:

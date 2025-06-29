@@ -3,8 +3,8 @@ from enum import Enum
 from PySide6.QtCore import QObject, Signal
 
 class State(Enum):
-    INACTIVE = 'Click a tile to start the game'
-    ACTIVE = 'Game in progress'
+    INACTIVE = 'Click a tile to start'
+    ACTIVE = ''
     PAUSED = 'Paused'
     WIN = 'Game won'
     LOSS_MINE_HIT = 'Game lost (mine exploded)'
