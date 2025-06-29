@@ -8,6 +8,6 @@
 
 * Do the time tracker.
 
-* Refactor, make code prettier, order the methods appropriately, config and run ruff, make things a bit more elegant
+* Refactor, make code prettier, order the methods appropriately, config and run ruff, make things a bit more elegant (especially for new game dialog which is a mess)
 
 * Add dialogue for game over (win or loss)
