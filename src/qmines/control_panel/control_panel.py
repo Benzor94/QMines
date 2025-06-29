@@ -1,12 +1,10 @@
 import PySide6.QtWidgets as QW
 import PySide6.QtGui as QG
 import PySide6.QtCore as QC
-from PySide6.QtCore import Signal
 
 from qmines.state_processor import State, StateProcessor
 from qmines.utilities.constants import Symbol
 from qmines.control_panel.new_game_dialog import NewGameDialog
-from qmines.game_parameters.game_parameters import GameParameters
 from qmines.utilities import set_font_size_based_on_height
 
 

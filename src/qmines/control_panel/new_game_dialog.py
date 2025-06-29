@@ -2,7 +2,6 @@ from enum import Enum
 
 import PySide6.QtWidgets as QW
 import PySide6.QtCore as QC
-from PySide6.QtCore import Signal
 
 from qmines.state_processor import State, StateProcessor
 from qmines.utilities.constants import BOARD_MIN_LENGTH, BOARD_MAX_LENGTH, PREFERRED_MINE_DENSITY, DEFAULT_TIME_LIMIT, \

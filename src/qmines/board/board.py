@@ -6,7 +6,6 @@ import PySide6.QtCore as QC
 import PySide6.QtGui as QG
 
 from qmines.board.tile import Tile
-from qmines.game_parameters.game_parameters import GameParameters
 from qmines.state_processor import StateProcessor
 from qmines.utilities.index_tools import convert_coordinates_to_index
 

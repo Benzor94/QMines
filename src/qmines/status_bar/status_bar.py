@@ -1,7 +1,6 @@
 from PySide6.QtWidgets import QStatusBar, QLabel
 from PySide6.QtCore import Slot
 
-from qmines.game_parameters.game_parameters import GameParameters
 from qmines.state_processor import FlagCountChange, State, StateProcessor
 from qmines.utilities.constants import Symbol
 

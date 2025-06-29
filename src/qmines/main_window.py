@@ -1,13 +1,12 @@
-from enum import Enum
 from random import sample
+from threading import Lock
 
 import PySide6.QtWidgets as QW
-from PySide6.QtCore import Slot, Signal, QSize
+from PySide6.QtCore import Slot, QSize
 
 from qmines.board.board import Board
 from qmines.board.tile import Tile
 from qmines.control_panel.control_panel import ControlPanel
-from qmines.game_parameters.game_parameters import GameParameters
 from qmines.game_parameters.settings_reader import write_settings
 from qmines.status_bar.status_bar import StatusBar
 from qmines.utilities.index_tools import convert_index_to_coordinates, proximity_iterator
@@ -19,6 +18,7 @@ class MainWindow(QW.QMainWindow):
     def __init__(self) -> None:
         super().__init__()
         self._state_processor = StateProcessor()
+        self._lock = Lock()
         self._parameters = self._state_processor.parameters
         self._board: Board
         self._control_panel: ControlPanel
@@ -73,14 +73,27 @@ class MainWindow(QW.QMainWindow):
 
     @Slot(int, int)
     def on_tile_revealed(self, row: int, col: int) -> None:
-        print(f'Tile ({row}, {col}) has been revealed. Is mine: {self._board[row, col].is_mine}')
-        if self._board[row, col].proximity_number == 0:
-            for neighbour in proximity_iterator(self._board, row, col):
-                neighbour.left_clicked.emit()
+        tile = self._board[row, col]
+        print(f'Tile ({row}, {col}) has been revealed. Is mine: {tile.is_mine}')
+        if tile.is_mine:
+            self._state_processor.state = State.LOSS_MINE_HIT
+        else:
+            with self._lock:
+                self._unrevealed_tiles -= 1
+            if self._unrevealed_tiles == self._parameters.n_mines:
+                self._state_processor.state = State.WIN
+            if self._board[row, col].proximity_number == 0:
+                for neighbour in proximity_iterator(self._board, row, col):
+                    neighbour.left_clicked.emit()
 
     @Slot(int, int)
     def on_revealed_tile_clicked(self, row: int, col: int) -> None:
-        ...
+        clicked_tile = self._board[row, col]
+        proximity = clicked_tile.proximity_number
+        number_of_nearby_flags = sum(1 for t in proximity_iterator(self._board, row, col) if not t.is_revealed and t.is_flagged)
+        if proximity == number_of_nearby_flags:
+            for tile in (t for t in proximity_iterator(self._board, row, col) if not t.is_revealed):
+                tile.on_left_click()
 
     def _set_board(self) -> None:
         tiles = [self._tile_factory(idx) for idx in range(self._parameters.number_of_elements)]

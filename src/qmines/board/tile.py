@@ -1,4 +1,3 @@
-from enum import Enum
 from typing import Final, override
 import PySide6.QtWidgets as QW
 import PySide6.QtCore as QC
@@ -32,6 +31,14 @@ class Tile(QW.QPushButton):
     @property
     def coordinates(self) -> tuple[int, int]:
         return self._coordinates
+    
+    @property
+    def is_revealed(self) -> bool:
+        return self._is_revealed
+    
+    @property
+    def is_flagged(self) -> bool:
+        return self._is_flagged
     
     @property
     def is_mine(self) -> bool:
