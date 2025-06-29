@@ -6,7 +6,7 @@ from types import MappingProxyType
 from typing import Final
 
 SETTINGS_FILE: Final[Traversable] = files('qmines') / 'resources' / 'settings.json'
-DEFAULT_SETTINGS: Final[MappingProxyType[str, int]] = MappingProxyType({'n_rows': 8,
+EASY_SETTINGS: Final[MappingProxyType[str, int]] = MappingProxyType({'n_rows': 8,
                                                                         'n_cols': 8,
                                                                         'n_mines': 10,
                                                                         'time_limit_in_seconds': 0})
@@ -19,8 +19,8 @@ HARD_SETTINGS: Final[MappingProxyType[str, int]] = MappingProxyType({'n_rows': 1
                                                                      'n_mines': 99,
                                                                      'time_limit_in_seconds': 0})
 
-BOARD_MIN_SIZE: Final[int] = 4
-BOARD_MAX_SIZE: Final[int] = 30
+BOARD_MIN_LENGTH: Final[int] = 4
+BOARD_MAX_LENGTH: Final[int] = 30
 
 PREFERRED_MINE_DENSITY: Final[float] = 0.156
 
