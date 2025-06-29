@@ -3,6 +3,7 @@ import PySide6.QtGui as QG
 import PySide6.QtCore as QC
 from PySide6.QtCore import Signal
 
+from qmines.state_processor import State, StateProcessor
 from qmines.utilities.constants import Symbol
 from qmines.control_panel.new_game_dialog import NewGameDialog
 from qmines.game_parameters.game_parameters import GameParameters
@@ -11,13 +12,11 @@ from qmines.utilities import set_font_size_based_on_height
 
 class ControlPanel(QW.QToolBar):
 
-    pause_state_change = Signal(bool)
-
-    def __init__(self, parameters: GameParameters) -> None:
+    def __init__(self) -> None:
         super().__init__('Control panel')
-        self._parameters = parameters
+        self._state_processor = StateProcessor()
 
-        self._new_game_dialog = NewGameDialog(self._parameters, self)
+        self._new_game_dialog = NewGameDialog(self)
 
         self._new_game_action = self._get_new_game_action()
         self._pause_action = self._get_pause_action()
@@ -28,6 +27,7 @@ class ControlPanel(QW.QToolBar):
         self.addSeparator()
         self.addAction(self._pause_action)
         self.setToolButtonStyle(QC.Qt.ToolButtonStyle.ToolButtonTextOnly)
+        self._state_processor.state_change.connect(self.on_state_change)
 
     @property
     def new_game_dialog(self) -> NewGameDialog:
@@ -36,15 +36,23 @@ class ControlPanel(QW.QToolBar):
     @QC.Slot()
     def on_new_game_action(self):
         self.new_game_dialog.exec()
-
-    @QC.Slot()
-    def on_game_over(self):
-        self._pause_action.setChecked(False)
-        self._pause_action.setEnabled(False)
     
-    @QC.Slot()
-    def on_game_start(self):
-        self._pause_action.setEnabled(True)
+    @QC.Slot(bool)
+    def on_pause_state_change(self, paused: bool) -> None:
+        if paused:
+            self._state_processor.state = State.PAUSED
+        else:
+            self._state_processor.state = State.ACTIVE
+    
+    @QC.Slot(State, State)
+    def on_state_change(self, previous: State, current: State) -> None:
+        match current:
+            case State.ACTIVE:
+                if previous == State.INACTIVE:
+                    self._pause_action.setEnabled(True)
+            case State.WIN | State.LOSS_MINE_HIT | State.LOSS_TIMEOUT:
+                self._pause_action.setChecked(False)
+                self._pause_action.setEnabled(False)
 
     def _get_new_game_action(self) -> QG.QAction:
         new_game_action = QG.QAction('New')
@@ -57,6 +65,6 @@ class ControlPanel(QW.QToolBar):
         pause_action.setToolTip('Pause/resume the game')
         pause_action.setCheckable(True)
         set_font_size_based_on_height(pause_action, 30)
-        pause_action.toggled.connect(self.pause_state_change)
+        pause_action.toggled.connect(self.on_pause_state_change)
         pause_action.setEnabled(False)
         return pause_action

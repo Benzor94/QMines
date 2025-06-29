@@ -2,6 +2,8 @@ from enum import Enum
 
 from PySide6.QtCore import QObject, Signal
 
+from qmines.game_parameters.game_parameters import GameParameters
+
 class State(Enum):
     INACTIVE = 'Click a tile to start'
     ACTIVE = ''
@@ -27,9 +29,8 @@ class Singleton[T]:
 @Singleton
 class StateProcessor(QObject):
 
-    state_change = Signal(State)  # The game state transitions
+    state_change = Signal(State, State)  # The game state transitions (previous state, current state)
     first_click = Signal(int, int)  # A tile has been left-clicked for the first time in the game
-    reveal_tile = Signal(int, int)  # When this signal is sent, a left-click is to be simulated on the marked tile
     tile_revealed = Signal(int, int)  # During an active game, an unrevealed tile is left-clicked
     revealed_tile_clicked = Signal(int, int)  # During an active game, a previously revealed tile is left-clicked
     flag_change = Signal(FlagCountChange)  # During an active game, an unrevealed tile is right-clicked
@@ -37,6 +38,7 @@ class StateProcessor(QObject):
     def __init__(self):
         super().__init__()
         self._state = State.INACTIVE
+        self._parameters: GameParameters | None = None
     
     @property
     def state(self) -> State:
@@ -44,5 +46,16 @@ class StateProcessor(QObject):
     
     @state.setter
     def state(self, value: State) -> None:
+        previous_state = self.state
         self._state = value
-        self.state_change.emit(self.state)
+        self.state_change.emit(previous_state, self.state)
+    
+    @property
+    def parameters(self) -> GameParameters:
+        if self._parameters is None:
+            raise ValueError('Game parameters have not been initialized.')
+        return self._parameters
+    
+    @parameters.setter
+    def parameters(self, value: GameParameters) -> None:
+        self._parameters = value

@@ -145,3 +145,15 @@ Notes:
   - When the receiver is "mainwindow or board ?" then even if it is decided that the board would handle tile operations,
     the mainwindow would still probably need to receive.
 
+Slots:
+  MainWindow:
+    on_first_click(int, int)
+    on_state_change(State)
+    on_tile_revealed(int, int)
+    on_revealed_tile_clicked(int, int)
+  Board:
+  Tile:
+    on_reveal_tile(int, int)
+  StatusBar:
+    on_tile_right_clicked(FlagCountChange)
+

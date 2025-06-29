@@ -4,6 +4,7 @@ import PySide6.QtWidgets as QW
 import PySide6.QtCore as QC
 from PySide6.QtCore import Signal
 
+from qmines.state_processor import State, StateProcessor
 from qmines.utilities.constants import BOARD_MIN_LENGTH, BOARD_MAX_LENGTH, PREFERRED_MINE_DENSITY, DEFAULT_TIME_LIMIT, \
     MINIMUM_TIME_LIMIT, MAXIMUM_TIME_LIMIT, EASY_SETTINGS, MEDIUM_SETTINGS, HARD_SETTINGS
 from qmines.game_parameters.game_parameters import GameParameters
@@ -19,13 +20,12 @@ class NewGameDialog(QW.QDialog):
     HARD_TEXT = 'Hard\n(30 x 16, 99 mines)'
     CUSTOM_TEXT = 'Custom\n(Set manually)'
 
-    start_new_game = Signal(GameParameters)
-
-    def __init__(self, parameters: GameParameters, parent: QW.QWidget | None = None):
+    def __init__(self, parent: QW.QWidget | None = None):
         super().__init__(parent)
         self.setWindowTitle('Set Up New Game')
 
-        self._parameters = parameters
+        self._state_processor = StateProcessor()
+        self._parameters = self._state_processor.parameters
         self._custom_mode_column_value = self._parameters.n_cols
         self._custom_mode_row_value = self._parameters.n_rows
         self._custom_mode_mine_value = self._parameters.n_mines
@@ -195,7 +195,8 @@ class NewGameDialog(QW.QDialog):
                               time_limit_in_seconds=self._time_limit_value)
 
     def _on_new_game_button_click(self, parameters: GameParameters) -> None:
-        self.start_new_game.emit(parameters)
+        self._state_processor.parameters = parameters
+        self._state_processor.state = State.INACTIVE
         self.accept()
 
 # TODO: Parameter saving

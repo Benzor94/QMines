@@ -7,15 +7,16 @@ import PySide6.QtGui as QG
 
 from qmines.board.tile import Tile
 from qmines.game_parameters.game_parameters import GameParameters
+from qmines.state_processor import StateProcessor
 from qmines.utilities.index_tools import convert_coordinates_to_index
 
 
 class Board(QW.QFrame):
 
-    def __init__(self, parameters: GameParameters, tiles: Sequence[Tile]) -> None:
+    def __init__(self, tiles: Sequence[Tile]) -> None:
         super().__init__()
-        self._parameters = parameters
-        self._h_to_w_ratio = parameters.n_rows / parameters.n_cols
+        self._parameters = StateProcessor().parameters
+        self._h_to_w_ratio = self._parameters.n_rows / self._parameters.n_cols
         self._tiles = tiles
         self._layout = QW.QGridLayout()
         self._set_size_properties()
