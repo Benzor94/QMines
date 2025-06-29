@@ -4,6 +4,11 @@
     these as states. Or maybe GAME_OVER should be split into LOSS and WIN or maybe even TIMEOUT, EXPLODED and WIN.
     The status bar text displaying the current game status should be defined here.
 
+    Currently in several places the state string is copied. This should instead be done with signals/slots, i.e. whenever a game state change happens,
+    it sends a signal to update the text.
+
+    Better to do this: https://stackoverflow.com/questions/73073370/global-signaling-in-pyside6
+
 * Clean up unused stuff (for example, the abstract grid thingy is not used anymore, its replacement is in utilities.index_tools)
 
 * Try fixing the size artifacts by triggering a resize on new game and unpause

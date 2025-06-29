@@ -7,7 +7,7 @@ from PySide6.QtCore import Signal
 
 from qmines.utilities import set_font_size_based_on_height
 from qmines.utilities.constants import Symbol
-from qmines.global_state import StateTracker
+from qmines.state_processor import StateProcessor, State
 
 class MineCountChange(Enum):
     ADDED = 1
@@ -32,6 +32,7 @@ class Tile(QW.QPushButton):
         self._is_flagged = False
         self._is_revealed = False
         self._proximity_number = -1
+        self._signal_node = StateProcessor()
 
         self.setSizePolicy(QW.QSizePolicy.Policy.Minimum, QW.QSizePolicy.Policy.Minimum)
         set_font_size_based_on_height(self, self.size().height())
@@ -77,15 +78,16 @@ class Tile(QW.QPushButton):
 
     @QC.Slot()
     def on_left_click(self) -> None:
-        if not StateTracker.game_is_active:
-            self.first_click_in_game.emit(*self.coordinates)
-        elif not self._is_revealed:
-            self.setFlat(True)
-            self._is_revealed = True
-            self._set_text_on_reveal_by_left_click()
-            self.tile_revealed.emit(*self.coordinates, self._is_mine)
-        else:
-            ...
+        match self._signal_node.state:
+            case State.INACTIVE:
+                self.first_click_in_game.emit(*self.coordinates)
+            case State.ACTIVE:
+                if not self._is_revealed:
+                    self._on_left_click_when_unrevealed()
+                else:
+                    ...
+            case State.PAUSED | State.WIN | State.LOSS:
+                return
 
     @QC.Slot()
     def on_right_click(self) -> None:
@@ -95,6 +97,12 @@ class Tile(QW.QPushButton):
     def on_game_start(self, i: int, j: int) -> None:
         if (i, j) == self._coordinates:
             self.on_left_click()
+    
+    def _on_left_click_when_unrevealed(self) -> None:
+        self.setFlat(True)
+        self._is_revealed = True
+        self._set_text_on_reveal_by_left_click()
+        self.tile_revealed.emit(*self.coordinates, self._is_mine)
     
     def _set_text_on_reveal_by_left_click(self) -> None:
         if self._is_mine:

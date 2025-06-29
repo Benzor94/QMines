@@ -30,3 +30,118 @@ Layouts:
  * Inherits from QLCDNumber
 
  gameClock (QTimer)
+
+ ------------------------------------------
+
+ Signal and slotology::
+  Objects:
+    MainWindow
+      Board
+        Tile
+      ControlPanel
+        New game button
+        Pause button
+        New game dialog
+      StatusBar
+        Game Status
+        Mine tracker
+        Time tracker
+
+When the game is launched, we get a new board, the game is in INACTIVE state
+When a tile is clicked, the game goes to active state
+  - A "first click happened" signal is sent containing the tile that was clicked
+  - This signal is intercepted by:
+    - the mainwindow (should it be the board?) and sets the mines and proximities
+  - When this is done, the game state is changed to ACTIVE and a "state change" signal is sent containing the current state (and the tile that was clicked?)
+  - The state change signal is intercepted by:
+    - the status bar, and sets the text to the current state;
+    - the pause button (technically the control panel), it gets set to enabled
+    - the time tracker, it starts the timer
+    - the tiles, the triggering tile gets left-clicked
+When the game is active, and an unrevealed tile that isn't a mine gets left clicked:
+  - A "tile revealed" signal is sent, containing the tile that was revealed
+  - This signal is intercepted by
+    - the mainwindow, it increases the revealed count by one, it triggers a cascade reveal, if this wins the game, then sends a state change
+When the game is active and an unrevealed tile that is a mine gets left clicked:
+  - A "tile revealed" signal is sent, containing the tile that was revealed
+  - This signal is intercepted by
+    - the mainwindow, it triggers a state change ...
+
+Signals:
+  "first click happened":
+    type: Tile
+    receivers:
+      - mainwindow or board ?
+    description:
+      When the first tile is clicked, transitioning the game from inert to active state.
+      The parameter is the tile that was clicked.
+    effects:
+      - Sets up the mines and the proximities.
+      - Triggers a "state change" signal from INACTIVE to ACTIVE.
+      - Triggers a "tile reveal" signal to simulate a left click on the triggering tile.
+  "state change":
+    type: State
+    receivers:
+      - status bar (status text, time tracker)
+      - control panel (pause button)
+      - mainwindow
+      - tile
+    description:
+      Triggered when the StateProcessor's state attribute gets set to a value.
+      The parameter is the state value.
+    effects:
+      - Status text: The status text is changed to the string value of the current state
+      - Time tracker: If transitioning to active, starts/resumes the timer, if transitioning to pause/win/loss, stops the timer
+      - Pause button: If transitioning to active, enables the pause button. If win/loss, it disables it
+      - Mainwindow: If transitinging to inactive (only possible when newgame), reinitializes the mainwindow
+      - Tile: If transitioning to win/loss it reveals the tile
+  "reveal tile":
+    type: Tile
+    receivers:
+      - Tile
+    description:
+      Only used as an auxiliary signal when the game goes from inactive to active, to simulate a left-click on the first-clicked tile
+      The parameter is the tile that was originally clicked.
+    effects:
+      - Triggers the left-click slot on the parameter tile.
+  "tile revealed":
+    type: Tile
+    receivers:
+      - mainwindow or board ?
+    description:
+      Signal that is sent when an unrevealed tile has been clicked.
+      Parameter is the tile that was clicked.
+      Could be unified with "first click happened"?
+    effects:
+      - If game is active, and tile is not mine, it increases the reveal count by one, and triggers a cascade reveal
+      - If game is active and tile is mine, it triggers a state change from active to loss
+      - If game is inactive then it does the same thing as "first click happened" (this is where unification could happen)
+      - In any other case, nothing happens
+  "revealed tile clicked":
+    type: Tile
+    receivers:
+      - mainwindow or board ?
+    description:
+      Signal that is sent when an already revealed tile has been clicked.
+      Parameter is the tile that was clicked.
+      Could be unified with "tile revealed" ?
+    effects:
+      - If the same amount of flags are near the tile as the tile's proximity number, then it reveales all unflagged neighbour tiles.
+      - If the game is not active, it does nothing.
+  "tile right clicked":
+    type: FlagCountChange
+    receivers:
+      - statusbar
+    description:
+      Triggered when a tile is right clicked.
+      Parameter is the FlagCountChange, ADDED if this results in a new flag, REMOVED otherwise
+    effect:
+      - If the game is active, and the tile is unrevealed, it flags the tile or removes the flag if already added
+      - Otherwise it does nothing.
+      - Incurs a mine count change in the mine tracker in the status bar
+
+Notes:
+  - These are only about the signals themselves, each signal emission may be pre-, or postceded by other, local side effects.
+  - When the receiver is "mainwindow or board ?" then even if it is decided that the board would handle tile operations,
+    the mainwindow would still probably need to receive.
+

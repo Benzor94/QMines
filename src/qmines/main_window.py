@@ -1,5 +1,4 @@
 from enum import Enum
-from typing import Final
 from random import sample
 
 import PySide6.QtWidgets as QW
@@ -11,7 +10,7 @@ from qmines.control_panel.control_panel import ControlPanel
 from qmines.game_parameters.game_parameters import GameParameters
 from qmines.game_parameters.settings_reader import write_settings
 from qmines.utilities.index_tools import convert_index_to_coordinates, proximity_iterator
-from qmines.global_state import StateTracker
+from qmines.state_processor import StateProcessor, State
 
 class GameOver(Enum):
     WIN = 0
@@ -23,13 +22,9 @@ class MainWindow(QW.QMainWindow):
     game_over = Signal(GameOver)
     game_start = Signal(int, int)
 
-    STATUS_TEXT_INERT: Final[str] = 'Game inactive'
-    STATUS_TEXT_ACTIVE: Final[str] = 'Game active'
-    STATUS_TEXT_PAUSED: Final[str] = 'Game paused'
-    STATUS_TEXT_FINISHED: Final[str] = 'Game over'
-
     def __init__(self, parameters: GameParameters) -> None:
         super().__init__()
+        self._signal_node = StateProcessor()
         self._parameters = parameters
         self._board: Board
         self._control_panel: ControlPanel
@@ -46,7 +41,7 @@ class MainWindow(QW.QMainWindow):
         """
     
     def set_up(self, parameters: GameParameters) -> None:
-        StateTracker.game_is_active = False
+        self._signal_node.state = State.INACTIVE
         self._remove_toolbars()
         self._parameters = parameters
         self._unrevealed_tiles = self._parameters.number_of_elements
@@ -73,16 +68,18 @@ class MainWindow(QW.QMainWindow):
     def on_pause(self, paused: bool) -> None:
         if paused:
             self._board.hide()
-            self._status_text.setText(self.__class__.STATUS_TEXT_PAUSED)
+            self._signal_node.state = State.PAUSED
+            self._status_text.setText(self._signal_node.state.value)
         else:
             self._board.show()
-            self._status_text.setText(self.__class__.STATUS_TEXT_ACTIVE)
+            self._signal_node.state = State.ACTIVE
+            self._status_text.setText(self._signal_node.state.value)
 
     @Slot(int, int)
     def on_first_click(self, i: int, j: int) -> None:
         self._set_up_mines(i, j)
-        StateTracker.game_is_active = True
-        self._status_text.setText(self.__class__.STATUS_TEXT_ACTIVE)
+        self._signal_node.state = State.ACTIVE
+        self._status_text.setText(self._signal_node.state.value)
         self.game_start.emit(i, j)
 
     @Slot(int, int, bool)
@@ -114,8 +111,8 @@ class MainWindow(QW.QMainWindow):
     
     def _set_statusbar(self) -> None:
         self._status_bar = QW.QStatusBar()
-        self._status_text = QW.QLabel(self.__class__.STATUS_TEXT_INERT)
-        self._status_bar.addPermanentWidget(self._status_text)
+        self._status_text = QW.QLabel(self._signal_node.state.value)
+        self._status_bar.addWidget(self._status_text)
         self._status_bar.setSizeGripEnabled(False)
         self.setStatusBar(self._status_bar)
 
