@@ -8,9 +8,9 @@ class State(Enum):
     INACTIVE = 'Click a tile to start'
     ACTIVE = ''
     PAUSED = 'Paused'
-    WIN = 'Game won'
-    LOSS_MINE_HIT = 'Game lost (mine exploded)'
-    LOSS_TIMEOUT = 'Game lost (time has run out)'
+    WIN = 'Win'
+    LOSS_MINE_HIT = 'Loss (hit mine)'
+    LOSS_TIMEOUT = 'Lost (timeout)'
 
 class FlagCountChange(Enum):
     ADDED = 1

@@ -92,6 +92,8 @@ class Tile(QW.QPushButton):
     def on_right_click(self) -> None:
         match self._state_processor.state:
             case State.ACTIVE:
+                if self._is_revealed:
+                    return
                 if self._is_flagged:
                     self._set_text_on_flag(False)
                     self._is_flagged = False
