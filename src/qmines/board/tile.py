@@ -86,7 +86,7 @@ class Tile(QW.QPushButton):
                     self._on_left_click_when_unrevealed()
                 else:
                     ...
-            case State.PAUSED | State.WIN | State.LOSS:
+            case State.PAUSED | State.WIN | State.LOSS_MINE_HIT | State.LOSS_TIMEOUT:
                 return
 
     @QC.Slot()
