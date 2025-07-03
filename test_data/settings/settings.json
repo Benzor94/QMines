@@ -1,0 +1,6 @@
+{
+  "n_rows": 20,
+  "n_cols": 30,
+  "n_mines": 110,
+  "time_limit": 200
+}
