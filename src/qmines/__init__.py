@@ -1,5 +1,1 @@
-
-
-def main() -> None:
-    
-    ...
+def main() -> None: ...
