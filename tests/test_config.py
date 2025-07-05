@@ -1,6 +1,7 @@
 import unittest
+from pathlib import Path
 
-from qmines.state.config import Config
+from qmines.state.config import Config, read_config_from_file, write_config_to_file
 
 
 class TestConfig(unittest.TestCase):
@@ -46,6 +47,17 @@ class TestConfig(unittest.TestCase):
         
         config = Config(8, 8, 10, 0)
         self.assertEqual(config.time_limit, 0)
+    
+    def test_config_read_write_to_json(self) -> None:
+        config = Config(12, 12, 15, 120)
+        path = Path('./test_data/settings/settings_write_test.json')
+        write_config_to_file(path, config)
+        read_config = read_config_from_file(path)
+        self.assertEqual(config.n_rows, read_config.n_rows)
+        self.assertEqual(config.n_cols, read_config.n_cols)
+        self.assertEqual(config.n_mines, read_config.n_mines)
+        self.assertEqual(config.time_limit, read_config.time_limit)
+        path.unlink()
 
 
 if __name__ == '__main__':
