@@ -39,14 +39,14 @@ class Singleton(type(QObject)):
 
 class StateManager(QObject, metaclass=Singleton):
 
-    state_change = Signal(State, State) # Emitted when the game state transitions (previous state, new state)
+    state_change = Signal(State, State)  # Emitted when the game state transitions (previous state, new state)
+    flag_count_change = Signal(FlagCountChange)  # Emitted when a flag is placed or removed
 
     def __init__(self):
         super().__init__()
         self._state = State.INACTIVE
         self._config: Config | None = None
         self._revealed_tiles = 0
-        self._number_of_flags = 0
     
     @property
     def state(self) -> State:

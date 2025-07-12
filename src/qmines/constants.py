@@ -20,4 +20,4 @@ class Symbol(Enum):
     PLAY = '\u25B6'
     EXPLOSION = '\U0001F4A5'
     INFINITY = u"\u221E"
-    TIMER = u"\u23F2"
+    TIMER = '\N{Alarm Clock}'
