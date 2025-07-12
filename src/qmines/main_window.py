@@ -2,7 +2,7 @@ from PySide6.QtWidgets import QFrame, QMainWindow, QSizePolicy, QToolBar, QVBoxL
 
 from qmines.state.state_manager import StateManager
 from qmines.status_bar.status_bar import StatusBar
-from qmines.toolbar import Toolbar
+from qmines.toolbar.toolbar import Toolbar
 
 
 class MainWindow(QMainWindow):
