@@ -2,9 +2,18 @@ from abc import abstractmethod
 from collections.abc import Iterator
 from typing import Protocol
 
+from PySide6.QtGui import QAction, QFont
+from PySide6.QtWidgets import QWidget
+
 
 def range_as_cls_interval(ran: range) -> str:
     return f'[{ran.start}, {ran.stop - 1}]'
+
+def set_font_size_based_on_height(widget: QWidget | QAction, height: int) -> None:
+    new_size = height // 2
+    current_font = widget.font()
+    if current_font.pointSize() != new_size:
+        widget.setFont(QFont(current_font.family(), new_size))
 
 class RectangularGrid[T](Protocol):
     

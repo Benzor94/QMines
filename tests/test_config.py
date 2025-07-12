@@ -2,7 +2,7 @@ import unittest
 from pathlib import Path
 
 from qmines.constants import EASY_SETTINGS
-from qmines.state.config import Config, read_config_from_file, read_config_from_user_config_dir, write_config_to_file, write_config_to_user_config_dir, get_user_config_dir
+from qmines.state.config import Config, get_user_config_dir, read_config_from_file, read_config_from_user_config_dir, write_config_to_file, write_config_to_user_config_dir
 
 
 class TestConfig(unittest.TestCase):
