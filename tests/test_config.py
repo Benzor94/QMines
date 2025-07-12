@@ -1,7 +1,8 @@
 import unittest
 from pathlib import Path
 
-from qmines.state.config import Config, read_config_from_file, write_config_to_file
+from qmines.constants import EASY_SETTINGS
+from qmines.state.config import Config, read_config_from_file, read_config_from_user_config_dir, write_config_to_file, write_config_to_user_config_dir, get_user_config_dir
 
 
 class TestConfig(unittest.TestCase):
@@ -58,7 +59,19 @@ class TestConfig(unittest.TestCase):
         self.assertEqual(config.n_mines, read_config.n_mines)
         self.assertEqual(config.time_limit, read_config.time_limit)
         path.unlink()
-
+    
+    def test_config_read_write_to_user_config_dir(self) -> None:
+        config = Config(12, 12, 15, 120)
+        write_config_to_user_config_dir(config)
+        read_config = read_config_from_user_config_dir()
+        (get_user_config_dir() / 'config.json').unlink()
+        self.assertEqual(read_config, config)
+    
+    def test_config_read_missing_config(self) -> None:
+        conf_file = get_user_config_dir() / 'config.json'
+        conf_file.unlink() if conf_file.exists() else None
+        config = read_config_from_user_config_dir()
+        self.assertEqual(config, Config.from_dict(EASY_SETTINGS))
 
 if __name__ == '__main__':
     unittest.main()
