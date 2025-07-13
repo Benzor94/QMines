@@ -9,7 +9,6 @@ from qmines.utilities import set_font_size_based_on_height
 
 
 class PauseAction(QAction):
-
     BAR_HEIGHT: Final[int] = 30
 
     def __init__(self) -> None:
@@ -20,14 +19,14 @@ class PauseAction(QAction):
         set_font_size_based_on_height(self, self.BAR_HEIGHT)
         self.setEnabled(False)
         self._set_up_connections()
-    
+
     @Slot(bool)
     def on_pause_action(self, paused: bool) -> None:
         if paused:
             self._state_manager.state = State.PAUSED
         else:
             self._state_manager.state = State.ACTIVE
-    
+
     @Slot(State, State)
     def on_state_change(self, previous: State, current: State) -> None:
         match current:
@@ -37,7 +36,7 @@ class PauseAction(QAction):
             case State.WIN | State.LOSS_MINE_HIT | State.LOSS_TIMEOUT:
                 self.setChecked(False)
                 self.setEnabled(False)
-    
+
     def _set_up_connections(self) -> None:
         self.toggled.connect(self.on_pause_action)
         self._state_manager.state_change.connect(self.on_state_change)

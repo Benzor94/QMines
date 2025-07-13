@@ -10,7 +10,6 @@ from qmines.utilities import set_font_size_based_on_height
 
 
 class Tile(QPushButton):
-
     MIN_SIZE: Final[int] = 32
 
     left_clicked = Signal()
@@ -27,35 +26,35 @@ class Tile(QPushButton):
         self._state_manager = StateManager()
         self._set_size_properties()
         self._set_up_connections()
-    
+
     @property
     def coordinates(self) -> tuple[int, int]:
         return self._coordinates
-    
+
     @property
     def is_mine(self) -> bool:
         return self._is_mine
-    
+
     @is_mine.setter
     def is_mine(self, value: bool) -> None:
         self._is_mine = bool(value)
-    
+
     @property
     def is_flagged(self) -> bool:
         return self._is_flagged
-    
+
     @property
     def is_revealed(self) -> bool:
         return self._is_revealed
-    
+
     @property
     def proximity_number(self) -> int:
         return self._proximity_number
-    
+
     @proximity_number.setter
     def proximity_number(self, value: int) -> None:
         self._proximity_number = value
-    
+
     @Slot()
     def on_left_click(self) -> None:
         match self._state_manager.state:
@@ -108,16 +107,16 @@ class Tile(QPushButton):
                 self.setFlat(True)
             case _:
                 return
-    
+
     @override
     def sizeHint(self) -> QSize:
         return QSize(self.MIN_SIZE, self.MIN_SIZE)
-    
+
     @override
     def resizeEvent(self, event: QResizeEvent) -> None:
         new_height = event.size().height()
         set_font_size_based_on_height(self, new_height)
-    
+
     @override
     def mouseReleaseEvent(self, e: QMouseEvent, /):
         if e.button() == Qt.MouseButton.LeftButton:
@@ -125,11 +124,11 @@ class Tile(QPushButton):
             self.setDown(False)
         elif e.button() == Qt.MouseButton.RightButton:
             self.right_clicked.emit()
-    
+
     def _set_size_properties(self) -> None:
         self.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
         set_font_size_based_on_height(self, self.size().height())
-    
+
     def _reveal_tile(self) -> None:
         self.setFlat(True)
         self._is_revealed = True
@@ -137,19 +136,19 @@ class Tile(QPushButton):
         if self.is_mine:
             self._state_manager.state = State.LOSS_MINE_HIT
         self._state_manager.tile_revealed.emit(*self.coordinates)
-    
+
     def _set_text_on_reveal(self, *, mine_symbol: Symbol = Symbol.EXPLOSION) -> None:
         if self._is_mine:
             self.setText(mine_symbol.value)
         else:
             self.setText(str(self._proximity_number)) if self._proximity_number else None
-    
+
     def _set_text_on_flag(self, flagged: bool) -> None:
         if flagged:
             self.setText(Symbol.FLAG.value)
         else:
             self.setText('')
-    
+
     def _set_up_connections(self) -> None:
         self.left_clicked.connect(self.on_left_click)
         self.right_clicked.connect(self.on_right_click)

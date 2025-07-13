@@ -15,19 +15,18 @@ class State(Enum):
     LOSS_MINE_HIT = 4
     LOSS_TIMEOUT = 5
 
-state_text_map = MappingProxyType({State.INACTIVE: 'Click a tile to start',
-                                   State.ACTIVE: '',
-                                   State.PAUSED: 'Paused',
-                                   State.WIN: 'Win',
-                                   State.LOSS_MINE_HIT: 'Game over',
-                                   State.LOSS_TIMEOUT: 'Game over'})
+
+state_text_map = MappingProxyType(
+    {State.INACTIVE: 'Click a tile to start', State.ACTIVE: '', State.PAUSED: 'Paused', State.WIN: 'Win', State.LOSS_MINE_HIT: 'Game over', State.LOSS_TIMEOUT: 'Game over'}
+)
+
 
 class FlagCountChange(Enum):
     ADDED = 1
     REMOVED = -1
 
-class StateManager(QObject, metaclass=Singleton):
 
+class StateManager(QObject, metaclass=Singleton):
     state_change = Signal(State, State)  # Emitted when the game state transitions (previous state, new state)
     flag_count_change = Signal(FlagCountChange)  # Emitted when a flag is placed or removed
     first_click_in_game = Signal(int, int)  # Emitted when the game is started by making the first click on a tile (coordinates of clicked tile)
@@ -41,38 +40,38 @@ class StateManager(QObject, metaclass=Singleton):
         self._config: Config | None = None
         self._revealed_tiles = 0
         self._set_up_connections()
-    
+
     @property
     def state(self) -> State:
         return self._state
-    
+
     @state.setter
     def state(self, value: State) -> None:
         previous_state = self._state
         self._state = value
         self.state_change.emit(previous_state, self.state)
-    
+
     @property
     def config(self) -> Config:
         if self._config is None:
             raise ValueError('Game configuration has not been initialized yet.')
         return self._config
-    
+
     @config.setter
     def config(self, value: Config) -> None:
         self._config = value
-    
+
     def reset(self, config: Config) -> None:
         self.config = config
         self._revealed_tiles = 0
         self.state = State.INACTIVE
-    
+
     @Slot(int, int)
     def on_tile_revealed(self) -> None:
         if self.state == State.ACTIVE:
             self._revealed_tiles += 1
             self._win_check()
-    
+
     def _win_check(self) -> None:
         if self.state == State.ACTIVE:
             config = self.config

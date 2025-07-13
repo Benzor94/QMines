@@ -12,7 +12,6 @@ from qmines.utilities import convert_coordinates_to_index, convert_index_to_coor
 
 
 class Board(QFrame):
-
     board_reappeared = Signal()
 
     def __init__(self) -> None:
@@ -24,38 +23,41 @@ class Board(QFrame):
         self._set_size_properties()
         self._set_layout_properties()
         self._set_up_connections()
-    
+
     @property
     def n_rows(self) -> int:
         return self._config.n_rows
+
     @property
     def n_cols(self) -> int:
         return self._config.n_cols
+
     @property
     def n_mines(self) -> int:
         return self._config.n_mines
+
     @property
     def board_size(self) -> int:
         return self.n_rows * self.n_cols
-    
+
     def __iter__(self) -> Iterator[Tile]:
         return iter(self._tiles)
-    
+
     def __getitem__(self, coordinates: tuple[int, int]) -> Tile:
         idx = convert_coordinates_to_index(*coordinates, self.n_rows, self.n_cols)
         return self._tiles[idx]
-    
+
     @Slot(int, int)
     def on_first_click(self, row: int, col: int) -> None:
         self._allocate_mines_and_proximities(row, col)
         self._state_manager.state = State.ACTIVE
-    
+
     @Slot(int, int)
     def on_tile_revealed(self, row: int, col: int) -> None:
         if self[row, col].proximity_number == 0:
             for tile in proximity_iterator(self, row, col):
                 tile.on_left_click()
-    
+
     @Slot(int, int)
     def on_revealed_tile_clicked(self, row: int, col: int) -> None:
         clicked_tile = self[row, col]
@@ -64,7 +66,6 @@ class Board(QFrame):
             for tile in (t for t in proximity_iterator(self, row, col) if not t.is_revealed):
                 tile.on_left_click()
 
-    
     @Slot(State, State)
     def on_state_change(self, previous: State, current: State) -> None:
         match current:
@@ -75,7 +76,7 @@ class Board(QFrame):
                 if previous == State.PAUSED:
                     self.show()
                     self.board_reappeared.emit()
-    
+
     @override
     def resizeEvent(self, event: QResizeEvent):
         size = event.size()
@@ -85,12 +86,12 @@ class Board(QFrame):
             self.resize(QSize(round(height / self._height_to_width_ratio), height))
         else:
             self.resize(QSize(width, round(width * self._height_to_width_ratio)))
-    
+
     def _set_size_properties(self) -> None:
         size_policy = QSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
         size_policy.setRetainSizeWhenHidden(True)
         self.setSizePolicy(size_policy)
-    
+
     def _set_layout_properties(self) -> None:
         layout = QGridLayout()
         for tile in self:
@@ -98,7 +99,7 @@ class Board(QFrame):
         layout.setSpacing(0)
         layout.setContentsMargins(0, 0, 0, 0)
         self.setLayout(layout)
-    
+
     def _allocate_mines_and_proximities(self, row: int, col: int) -> None:
         mine_tiles = sample([t for t in self if t.coordinates != (row, col)], self.n_mines)
         for tile in mine_tiles:
@@ -109,7 +110,7 @@ class Board(QFrame):
                 if t.is_mine:
                     proximity_number += 1
             tile.proximity_number = proximity_number
-    
+
     def _set_up_connections(self) -> None:
         self._state_manager.first_click_in_game.connect(self.on_first_click)
         self._state_manager.tile_revealed.connect(self.on_tile_revealed)

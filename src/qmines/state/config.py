@@ -53,21 +53,25 @@ def read_config_from_file(path: Path) -> Config:
         config_json = json.load(f)
         return Config.from_dict(config_json)
 
+
 def write_config_to_file(path: Path, config: Config) -> None:
     with open(path, 'w') as f:
         json.dump(config.to_dict(), f, indent=2)
 
+
 def write_config_to_user_config_dir(config: Config) -> None:
     app_config_dir = get_user_config_dir()
     app_config_dir.mkdir(parents=True, exist_ok=True)
-    
+
     write_config_to_file(app_config_dir / 'config.json', config)
+
 
 def read_config_from_user_config_dir() -> Config:
     app_config_dir = get_user_config_dir()
     config_file = app_config_dir / 'config.json'
     config = read_config_from_file(config_file) if config_file.is_file() else Config.from_dict(EASY_SETTINGS)
     return config
+
 
 def get_user_config_dir() -> Path:
     default_conf_dir = environ.get('APPDATA') or environ.get('XDG_CONFIG_HOME')

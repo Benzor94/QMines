@@ -6,7 +6,6 @@ from qmines.status_bar.time_tracker import TimeLabel
 
 
 class StatusBar(QStatusBar):
-
     def __init__(self):
         super().__init__()
         self._status_label = StatusLabel()
