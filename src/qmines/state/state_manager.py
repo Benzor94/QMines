@@ -1,10 +1,10 @@
 from enum import Enum
 from types import MappingProxyType
-from typing import override
 
 from PySide6.QtCore import QObject, Signal, Slot
 
 from qmines.state.config import Config
+from qmines.state.singleton import Singleton
 
 
 class State(Enum):
@@ -26,17 +26,6 @@ class FlagCountChange(Enum):
     ADDED = 1
     REMOVED = -1
 
-class Singleton(type(QObject)):
-    def __init__(cls, name, bases, dict):
-        super().__init__(name, bases, dict)
-        cls.instance = None
-    
-    @override
-    def __call__(cls, *args, **kwargs):
-        if cls.instance is None:
-            cls.instance = super().__call__(*args, **kwargs)
-        return cls.instance
-
 class StateManager(QObject, metaclass=Singleton):
 
     state_change = Signal(State, State)  # Emitted when the game state transitions (previous state, new state)
@@ -44,6 +33,7 @@ class StateManager(QObject, metaclass=Singleton):
     first_click_in_game = Signal(int, int)  # Emitted when the game is started by making the first click on a tile (coordinates of clicked tile)
     tile_revealed = Signal(int, int)  # Emitted when a hidden tile is revealed (coordinates of the revealed tile)
     revealed_tile_clicked = Signal(int, int)  # Emitted when an already revealed tile is clicked (coordinates of the clicked tile)
+    new_game_start = Signal(Config)  # Emitted when a new game is started to destroy then recreate the board (config of the new game)
 
     def __init__(self):
         super().__init__()

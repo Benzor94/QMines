@@ -1,14 +1,13 @@
 
-from typing import cast
+
 from PySide6.QtCore import Slot
 from PySide6.QtWidgets import QDialog, QDialogButtonBox, QFrame, QLayout, QVBoxLayout, QWidget
 
-from qmines.application import Application
 from qmines.constants import EASY_SETTINGS, HARD_SETTINGS, MEDIUM_SETTINGS
 from qmines.dialog.new_game.custom_mode import CustomModeSettingsLayout
 from qmines.dialog.new_game.hardcore_mode import HardcoreModeSelectorLayout
 from qmines.dialog.new_game.mode_selector_buttons import ModeSelectorButtonLayout, NamedGameMode
-from qmines.state.config import Config, write_config_to_user_config_dir
+from qmines.state.config import Config
 from qmines.state.state_manager import StateManager
 
 
@@ -74,8 +73,5 @@ class NewGameDialog(QDialog):
         self._custom_mode_settings.start_button.clicked.connect(self.on_custom_mode_start_button_click)
     
     def _start_new_game(self, new_config: Config) -> None:
-        write_config_to_user_config_dir(new_config)
-        self._state_manager.reset(new_config)
-        app = cast(Application, Application.instance())
-        app.replace_main_window()
         self.accept()
+        self._state_manager.new_game_start.emit(new_config)
