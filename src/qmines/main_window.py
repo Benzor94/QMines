@@ -2,7 +2,9 @@ from PySide6.QtCore import QSize, Slot
 from PySide6.QtWidgets import QFrame, QMainWindow, QSizePolicy, QToolBar, QVBoxLayout
 
 from qmines.board.board import Board
-from qmines.state.state_manager import StateManager
+from qmines.dialog.game_over.game_over_dialog import GameOverDialog
+from qmines.dialog.new_game.new_game_dialog import NewGameDialog
+from qmines.state.state_manager import State, StateManager
 from qmines.status_bar.status_bar import StatusBar
 from qmines.toolbar.toolbar import Toolbar
 
@@ -18,14 +20,27 @@ class MainWindow(QMainWindow):
         self._status_bar = self._create_status_bar()
         self._frame = QFrame()
         self._board = self._create_board()
+        self._game_over_dialog = self._create_game_over_dialog()
         self._set_layout()
         self._set_size_properties()
         self.setCentralWidget(self._frame)
+        self._set_up_connections()
         self.show()
 
     @Slot()
     def on_board_reappearing(self) -> None:
         self._adjust_size()
+
+    @Slot()
+    def on_game_over_dialog_accepted(self) -> None:
+        NewGameDialog(self).exec()
+
+    @Slot(State, State)
+    def on_state_change(self, _, current: State) -> None:
+        match current:
+            case State.WIN | State.LOSS_MINE_HIT | State.LOSS_TIMEOUT:
+                self._game_over_dialog.update_label_text()
+                self._game_over_dialog.exec()
 
     def _remove_toolbars(self) -> None:
         for tb in self.findChildren(QToolBar):
@@ -46,6 +61,11 @@ class MainWindow(QMainWindow):
         board.board_reappeared.connect(self.on_board_reappearing)
         return board
 
+    def _create_game_over_dialog(self) -> GameOverDialog:
+        dialog = GameOverDialog(self)
+        dialog.accepted.connect(self.on_game_over_dialog_accepted)
+        return dialog
+
     def _set_layout(self) -> None:
         frame_layout = QVBoxLayout()
         frame_layout.addWidget(self._board)
@@ -61,3 +81,6 @@ class MainWindow(QMainWindow):
         width = size.width()
         self.resize(QSize(width + 1, height + 1))
         self.resize(QSize(width, height))
+
+    def _set_up_connections(self) -> None:
+        self._state_manager.state_change.connect(self.on_state_change)
