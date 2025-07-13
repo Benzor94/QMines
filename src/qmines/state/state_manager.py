@@ -2,7 +2,7 @@ from enum import Enum
 from types import MappingProxyType
 from typing import override
 
-from PySide6.QtCore import QObject, Signal
+from PySide6.QtCore import QObject, Signal, Slot
 
 from qmines.state.config import Config
 
@@ -41,12 +41,16 @@ class StateManager(QObject, metaclass=Singleton):
 
     state_change = Signal(State, State)  # Emitted when the game state transitions (previous state, new state)
     flag_count_change = Signal(FlagCountChange)  # Emitted when a flag is placed or removed
+    first_click_in_game = Signal(int, int)  # Emitted when the game is started by making the first click on a tile (coordinates of clicked tile)
+    tile_revealed = Signal(int, int)  # Emitted when a hidden tile is revealed (coordinates of the revealed tile)
+    revealed_tile_clicked = Signal(int, int)  # Emitted when an already revealed tile is clicked (coordinates of the clicked tile)
 
     def __init__(self):
         super().__init__()
         self._state = State.INACTIVE
         self._config: Config | None = None
         self._revealed_tiles = 0
+        self._set_up_connections()
     
     @property
     def state(self) -> State:
@@ -66,7 +70,13 @@ class StateManager(QObject, metaclass=Singleton):
     
     @config.setter
     def config(self, value: Config) -> None:
-        self._config = value 
+        self._config = value
+    
+    @Slot(int, int)
+    def on_tile_revealed(self) -> None:
+        if self.state == State.ACTIVE:
+            self._revealed_tiles += 1
+            self._win_check()
     
     def _win_check(self) -> None:
         if self.state == State.ACTIVE:
@@ -74,3 +84,6 @@ class StateManager(QObject, metaclass=Singleton):
             number_of_unrevealed_tiles = config.n_rows * config.n_cols - self._revealed_tiles
             if number_of_unrevealed_tiles == config.n_mines:
                 self.state = State.WIN
+
+    def _set_up_connections(self) -> None:
+        self.tile_revealed.connect(self.on_tile_revealed)

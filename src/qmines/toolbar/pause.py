@@ -19,7 +19,7 @@ class PauseAction(QAction):
         self.setCheckable(True)
         set_font_size_based_on_height(self, self.BAR_HEIGHT)
         self.setEnabled(False)
-        self.toggled.connect(self.on_pause_action)
+        self._set_up_connections()
     
     @Slot(bool)
     def on_pause_action(self, paused: bool) -> None:
@@ -37,3 +37,7 @@ class PauseAction(QAction):
             case State.WIN | State.LOSS_MINE_HIT | State.LOSS_TIMEOUT:
                 self.setChecked(False)
                 self.setEnabled(False)
+    
+    def _set_up_connections(self) -> None:
+        self.toggled.connect(self.on_pause_action)
+        self._state_manager.state_change.connect(self.on_state_change)
