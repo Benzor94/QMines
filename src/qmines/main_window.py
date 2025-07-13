@@ -30,11 +30,11 @@ class MainWindow(QMainWindow):
     @Slot()
     def on_board_reappearing(self) -> None:
         self._adjust_size()
-    
+
     @Slot()
     def on_game_over_dialog_accepted(self) -> None:
         NewGameDialog(self).exec()
-    
+
     @Slot(State, State)
     def on_state_change(self, _, current: State) -> None:
         match current:
@@ -60,7 +60,7 @@ class MainWindow(QMainWindow):
         board = Board()
         board.board_reappeared.connect(self.on_board_reappearing)
         return board
-    
+
     def _create_game_over_dialog(self) -> GameOverDialog:
         dialog = GameOverDialog(self)
         dialog.accepted.connect(self.on_game_over_dialog_accepted)
@@ -81,6 +81,6 @@ class MainWindow(QMainWindow):
         width = size.width()
         self.resize(QSize(width + 1, height + 1))
         self.resize(QSize(width, height))
-    
+
     def _set_up_connections(self) -> None:
         self._state_manager.state_change.connect(self.on_state_change)

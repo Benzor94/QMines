@@ -1,19 +1,18 @@
-
 from typing import Final
-from PySide6.QtWidgets import QDialog, QDialogButtonBox, QWidget, QLabel, QVBoxLayout, QPushButton
+
 from PySide6.QtCore import Qt
+from PySide6.QtWidgets import QDialog, QDialogButtonBox, QLabel, QPushButton, QVBoxLayout, QWidget
 
 from qmines.state.state_manager import State, StateManager
 
-class GameOverDialog(QDialog):
 
+class GameOverDialog(QDialog):
     QUESTION_TEXT: Final[str] = '\nWould you like to start a new game?'
     WIN_TEXT: Final[str] = 'Congratulations, you have won the game!'
     LOSS_TEXT: Final[str] = 'You have lost the game!'
     REASON_TEXT_MINE: Final[str] = ' (Mine triggered)'
     REASON_TEXT_TIMEOUT: Final[str] = ' (Time ran out)'
 
-    
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self.setWindowTitle('Game Over')
@@ -22,7 +21,7 @@ class GameOverDialog(QDialog):
         self._label = QLabel('')
         self._buttonbox = self._create_buttonbox()
         self._set_layout_properties()
-    
+
     def _create_buttonbox(self) -> QDialogButtonBox:
         buttonbox = QDialogButtonBox(Qt.Orientation.Horizontal)
         ok_button = QPushButton('New game')
@@ -31,13 +30,13 @@ class GameOverDialog(QDialog):
         buttonbox.accepted.connect(self.accept)
         buttonbox.rejected.connect(self.reject)
         return buttonbox
-    
+
     def _set_layout_properties(self) -> None:
         layout = QVBoxLayout()
         layout.addWidget(self._label)
         layout.addWidget(self._buttonbox)
         self.setLayout(layout)
-    
+
     def update_label_text(self) -> None:
         match self._state_manager.state:
             case State.WIN:
