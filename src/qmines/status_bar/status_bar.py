@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QLabel, QStatusBar
+from PySide6.QtWidgets import QStatusBar
 
 from qmines.status_bar.mine_counter import MineCounter
 from qmines.status_bar.status_text import StatusLabel

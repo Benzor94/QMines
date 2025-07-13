@@ -72,6 +72,11 @@ class StateManager(QObject, metaclass=Singleton):
     def config(self, value: Config) -> None:
         self._config = value
     
+    def reset(self, config: Config) -> None:
+        self.config = config
+        self._revealed_tiles = 0
+        self.state = State.INACTIVE
+    
     @Slot(int, int)
     def on_tile_revealed(self) -> None:
         if self.state == State.ACTIVE:

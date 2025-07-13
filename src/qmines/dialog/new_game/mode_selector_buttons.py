@@ -1,6 +1,7 @@
 from enum import Enum
 from typing import Final
 
+from PySide6.QtCore import Signal, Slot
 from PySide6.QtWidgets import QHBoxLayout, QPushButton
 
 
@@ -23,6 +24,8 @@ class CustomModeButton(QPushButton):
         self.setCheckable(True)
 
 class ModeSelectorButtonLayout(QHBoxLayout):
+
+    named_mode_button_clicked = Signal(NamedGameMode)
     
     def __init__(self) -> None:
         super().__init__()
@@ -34,6 +37,7 @@ class ModeSelectorButtonLayout(QHBoxLayout):
         self.addWidget(self.medium_mode_button)
         self.addWidget(self.hard_mode_button)
         self.addWidget(self.custom_mode_button)
+        self._set_up_connections()
     
     @property
     def easy_mode_button(self) -> NamedGameModeButton:
@@ -50,3 +54,8 @@ class ModeSelectorButtonLayout(QHBoxLayout):
     @property
     def custom_mode_button(self) -> CustomModeButton:
         return self._custom_mode_button
+    
+    def _set_up_connections(self) -> None:
+        self.easy_mode_button.clicked.connect(lambda: self.named_mode_button_clicked.emit(NamedGameMode.EASY))
+        self.medium_mode_button.clicked.connect(lambda: self.named_mode_button_clicked.emit(NamedGameMode.MEDIUM))
+        self.hard_mode_button.clicked.connect(lambda: self.named_mode_button_clicked.emit(NamedGameMode.HARD))
