@@ -21,7 +21,6 @@ class MainWindow(QMainWindow):
         self._status_bar = self._create_status_bar()
         self._frame = QFrame()
         self._board = self._create_board()
-        self._game_over_dialog = self._create_game_over_dialog()
         self._set_layout()
         self._set_size_properties()
         self.setCentralWidget(self._frame)
@@ -40,8 +39,9 @@ class MainWindow(QMainWindow):
     def on_state_change(self, _, current: State) -> None:
         match current:
             case State.WIN | State.LOSS_MINE_HIT | State.LOSS_TIMEOUT:
-                self._game_over_dialog.update_label_text()
-                self._game_over_dialog.exec()
+                dialog = self._create_game_over_dialog()
+                dialog.update_label_text()
+                dialog.exec()
 
     def _create_toolbar(self) -> Toolbar:
         toolbar = Toolbar()
