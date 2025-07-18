@@ -1,9 +1,11 @@
-from PySide6.QtCore import QSize, Slot
-from PySide6.QtWidgets import QFrame, QMainWindow, QSizePolicy, QToolBar, QVBoxLayout
+from PySide6.QtCore import QObject, QSize, Slot
+from PySide6.QtWidgets import QFrame, QMainWindow, QSizePolicy, QVBoxLayout
 
 from qmines.board.board import Board
 from qmines.dialog.game_over.game_over_dialog import GameOverDialog
 from qmines.dialog.new_game.new_game_dialog import NewGameDialog
+from qmines.state.config import Config, write_config_to_user_config_dir
+from qmines.state.singleton import Singleton
 from qmines.state.state_manager import State, StateManager
 from qmines.status_bar.status_bar import StatusBar
 from qmines.toolbar.toolbar import Toolbar
@@ -70,7 +72,6 @@ class MainWindow(QMainWindow):
         self.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
 
     def _adjust_size(self) -> None:
-        # self.adjustSize()
         size = self.size()
         height = size.height()
         width = size.width()
@@ -79,3 +80,28 @@ class MainWindow(QMainWindow):
 
     def _set_up_connections(self) -> None:
         self._state_manager.state_change.connect(self.on_state_change)
+
+
+class MainWindowManager(QObject, metaclass=Singleton):
+    def __init__(self) -> None:
+        super().__init__()
+        self._state_manager = StateManager()
+        self._main_window: MainWindow | None = None
+        self._state_manager.new_game_start.connect(self.on_new_game_start)
+
+    def create_main_window(self) -> None:
+        if self._main_window is None:
+            self._main_window = MainWindow()
+
+    def replace_main_window(self) -> None:
+        if self._main_window is None:
+            self.create_main_window()
+            return
+        self._main_window = None
+        self.create_main_window()
+
+    @Slot(Config)
+    def on_new_game_start(self, config: Config) -> None:
+        write_config_to_user_config_dir(config)
+        self._state_manager.reset(config)
+        self.replace_main_window()
