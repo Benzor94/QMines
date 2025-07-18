@@ -1,3 +1,4 @@
+from os import getenv
 from typing import Final, override
 
 from PySide6.QtCore import QSize, Qt, Signal, Slot
@@ -7,6 +8,8 @@ from PySide6.QtWidgets import QPushButton, QSizePolicy
 from qmines.constants import Symbol
 from qmines.state.state_manager import FlagCountChange, State, StateManager
 from qmines.utilities import set_font_size_based_on_height
+
+HIDE_WHEN_REVEALED_AND_EMPTY: Final[bool] = getenv('QMINES_HIDE_EMPTY_TILE', 'false').casefold() == 'true'
 
 
 class Tile(QPushButton):
@@ -120,13 +123,15 @@ class Tile(QPushButton):
     @override
     def mouseReleaseEvent(self, e: QMouseEvent, /):
         if e.button() == Qt.MouseButton.LeftButton:
-            self.left_clicked.emit()
             self.setDown(False)
+            self.left_clicked.emit()            
         elif e.button() == Qt.MouseButton.RightButton:
             self.right_clicked.emit()
 
     def _set_size_properties(self) -> None:
-        self.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
+        size_policy = QSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
+        size_policy.setRetainSizeWhenHidden(True)
+        self.setSizePolicy(size_policy)
         set_font_size_based_on_height(self, self.size().height())
 
     def _reveal_tile(self) -> None:
@@ -141,13 +146,17 @@ class Tile(QPushButton):
         if self._is_mine:
             self.setText(mine_symbol.value)
         else:
-            self.setText(str(self._proximity_number)) if self._proximity_number else None
+            self.setText(str(self._proximity_number)) if self._proximity_number else self._set_visual_style_if_revealed_and_empty()
 
     def _set_text_on_flag(self, flagged: bool) -> None:
         if flagged:
             self.setText(Symbol.FLAG.value)
         else:
             self.setText('')
+    
+    def _set_visual_style_if_revealed_and_empty(self) -> None:
+        if HIDE_WHEN_REVEALED_AND_EMPTY:
+            self.setHidden(True)
 
     def _set_up_connections(self) -> None:
         self.left_clicked.connect(self.on_left_click)

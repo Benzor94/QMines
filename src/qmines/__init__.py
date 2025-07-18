@@ -22,9 +22,7 @@ class MainWindowManager(QObject, metaclass=Singleton):
         if self._main_window is None:
             self.create_main_window()
             return
-        old_mw = self._main_window
         self._main_window = None
-        old_mw.destroy()
         self.create_main_window()
 
     @Slot(Config)
