@@ -15,7 +15,6 @@ class MainWindow(QMainWindow):
         self._state_manager = StateManager()
         self._config = self._state_manager.config
 
-        self._remove_toolbars()
         self._toolbar = self._create_toolbar()
         self._status_bar = self._create_status_bar()
         self._frame = QFrame()
@@ -41,10 +40,6 @@ class MainWindow(QMainWindow):
             case State.WIN | State.LOSS_MINE_HIT | State.LOSS_TIMEOUT:
                 self._game_over_dialog.update_label_text()
                 self._game_over_dialog.exec()
-
-    def _remove_toolbars(self) -> None:
-        for tb in self.findChildren(QToolBar):
-            self.removeToolBar(tb)
 
     def _create_toolbar(self) -> Toolbar:
         toolbar = Toolbar()
