@@ -2,7 +2,7 @@ from os import getenv
 from typing import Final, override
 
 from PySide6.QtCore import QSize, Qt, Signal, Slot
-from PySide6.QtGui import QMouseEvent, QResizeEvent
+from PySide6.QtGui import QMouseEvent, QResizeEvent, QIcon
 from PySide6.QtWidgets import QPushButton, QSizePolicy
 
 from qmines.constants import Symbol
@@ -144,7 +144,9 @@ class Tile(QPushButton):
 
     def _set_text_on_reveal(self, *, mine_symbol: Symbol = Symbol.EXPLOSION) -> None:
         if self._is_mine:
-            self.setText(mine_symbol.value)
+            #self.setText(mine_symbol.value)
+            self.setIcon(QIcon('9003935.png'))
+            self.setIconSize(QSize(self.size().height(), self.size().height()))
         else:
             self.setText(str(self._proximity_number)) if self._proximity_number else self._set_visual_style_if_revealed_and_empty()
 
