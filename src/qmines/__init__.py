@@ -1,2 +1,5 @@
+from PySide6.QtWidgets import QApplication
+
+
 def main() -> None:
-    print("Hello from qmines!")
+    app = QApplication([])
