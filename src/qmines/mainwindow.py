@@ -12,7 +12,7 @@ class MainWindow(QMainWindow):
         self.setWindowTitle('QMines')
         self._set_size_properties()
         self._set_layout_properties()
-        self._set_minimum_size()
+        #self._set_minimum_size()
         self.show()
     
     def set_paused(self, paused: bool) -> None:
