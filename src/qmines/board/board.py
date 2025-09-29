@@ -74,30 +74,6 @@ class Board(QObject):
             if clicked_tile.proximity_number == 0:
                 self._cascade_reveal(row, col)
     
-    """
-    @Slot(int, int)
-    def on_left_click_old(self, row: int, col: int) -> None:
-        if self._game_over:
-            return
-        if not self._initialized:
-            self._set_up_board(row, col)
-            self._initialized = True
-            self.on_left_click(row, col)
-            return
-        clicked_tile = self[row, col]
-        if clicked_tile.is_flag:
-            return
-        if not clicked_tile.is_revealed:
-            self._reveal_tile(clicked_tile)
-            if clicked_tile.proximity_number == 0:
-                self._cascade_reveal(row, col)
-            return
-        if clicked_tile.is_revealed and clicked_tile.proximity_number != 0 and not clicked_tile.is_mine:
-            number_of_nearby_flags = sum(1 for tile in self._proximity_iterator(row, col) if tile.is_flag)
-            if number_of_nearby_flags == clicked_tile.proximity_number:
-                self._cascade_reveal(row, col)
-    """
-    
     @Slot(int, int)
     def on_right_click(self, row: int, col: int) -> None:
         if self._game_over or not self._initialized:

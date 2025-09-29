@@ -39,5 +39,5 @@ class BoardView(QFrame):
         self.setLayout(self._layout)
     
     def _set_border(self) -> None:
-        self.setFrameStyle(QFrame.Shape.Box | QFrame.Shadow.Plain)
+        self.setFrameStyle(QFrame.Shape.Box | QFrame.Shadow.Raised)
         self.setLineWidth(2)
