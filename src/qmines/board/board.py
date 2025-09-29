@@ -14,13 +14,18 @@ class GameOverReason(Enum):
     WIN = 0
     LOSS = 1
 
+class FlagCountChange(Enum):
+    ADDED = 1
+    REMOVED = -1
+
 
 class Board(QObject):
 
-    flag_changed = Signal(int)
+    flag_changed = Signal(FlagCountChange)
     game_over = Signal(GameOverReason)
 
     def __init__(self, config: Config) -> None:
+        super().__init__()
         self._n_rows = config.number_of_rows
         self._n_cols = config.number_of_columns
         self._n_mines = config.number_of_mines
@@ -37,6 +42,9 @@ class Board(QObject):
     
     def __iter__(self) -> Iterator[Tile]:
         return iter(self._tiles)
+    
+    def __del__(self) -> None:
+        print('Board was deleted.')
     
     @property
     def view(self) -> BoardView:
@@ -55,7 +63,7 @@ class Board(QObject):
         if clicked_tile.is_flag:
             return
         if not clicked_tile.is_revealed:
-            clicked_tile.reveal()
+            self._reveal_tile(clicked_tile)
             if clicked_tile.proximity_number == 0:
                 self._cascade_reveal(row, col)
             return
@@ -73,10 +81,10 @@ class Board(QObject):
             return
         if tile.is_flag:
             tile.set_flag(False)
-            self.flag_changed.emit(-1)
+            self.flag_changed.emit(FlagCountChange.REMOVED)
         else:
             tile.set_flag(True)
-            self.flag_changed.emit(1)
+            self.flag_changed.emit(FlagCountChange.ADDED)
     
     def _create_tile(self, idx: int) -> Tile:
         tile = Tile(*self._index_to_coordinates(idx))
@@ -139,12 +147,20 @@ class Board(QObject):
         return 0 <= row < self._n_rows and 0 <= col < self._n_cols
     
     def _proximity_iterator(self, row: int, col: int, *, on_complement: bool = False) -> Iterator[Tile]:
-        self._coordinates_on_board_check(row, col)
-        for tile in self:
-            is_central = (row, col) == (tile.row, tile.col)
-            is_neighbour = (row - 1 <= tile.row <= row + 1) and (col - 1 <= tile.col <= col + 1)
-            to_be_yielded = not is_neighbour if on_complement else is_neighbour
-            if to_be_yielded and not is_central:
-                yield tile
-
+        match on_complement:
+            case True:
+                return self._proximity_iterator_inverse(row, col)
+            case False:
+                return self._proximity_iterator_direct(row, col)
+    
+    def _proximity_iterator_direct(self, row: int, col: int) -> Iterator[Tile]:
+        for r in (row - 1, row, row + 1):
+            for c in (col - 1, col, col + 1):
+                if self._is_on_board(r, c) and not (r == row and c == col):
+                    yield self[r, c]
+    
+    def _proximity_iterator_inverse(self, row: int, col: int) -> Iterator[Tile]:
+        for r in set(range(self._n_rows)) - {row - 1, row, row + 1}:
+            for c in set(range(self._n_cols)) - {col - 1, col, col + 1}:
+                yield self[r, c]
     
