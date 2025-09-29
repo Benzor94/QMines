@@ -16,9 +16,10 @@ MEDIUM_CONFIG: Final[Config] = Config(16, 16, 40)
 HARD_CONFIG: Final[Config] = Config(16, 30, 99)
 
 def read_config_from_file() -> Config:
-    with open(_get_config_file(), 'r') as f:
-        config_json = json.load(f)
     try:
+        with open(_get_config_file(), 'r') as f:
+            config_json = json.load(f)
+    
         n_rows = config_json['number_of_rows']
         n_cols = config_json['number_of_columns']
         n_mines = config_json['number_of_mines']

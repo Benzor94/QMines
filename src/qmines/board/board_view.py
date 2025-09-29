@@ -12,6 +12,9 @@ class BoardView(QFrame):
         self._height_to_width_ratio = height_to_width_ratio
         self._tiles = tiles
         self._layout = QGridLayout()
+        self._set_size_properties()
+        self._set_layout_properties()
+        self._set_border()
     
     @override
     def resizeEvent(self, event: QResizeEvent):

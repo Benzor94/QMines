@@ -1,6 +1,6 @@
 from PySide6.QtCore import QObject, Signal, Slot
 
-from qmines.tile.tile_view import IconState, TileView
+from qmines.tile.tile_view import IconState, PressedState, TileView
 
 
 class Tile(QObject):
@@ -81,3 +81,13 @@ class Tile(QObject):
             self.view.set_display_state(IconState.FLAG)
         else:
             self.view.set_display_state(IconState.EMPTY)
+    
+    def reveal(self) -> None:
+        self._is_revealed = True
+        if self.exploded:
+            self.view.set_display_state(IconState.EXPLOSION)
+        elif self.is_mine:
+            self.view.set_display_state(IconState.MINE)
+        else:
+            self.view.set_display_state(self.proximity_number)
+        self.view.set_pressed_state(PressedState.FLAT if self.proximity_number != 0 else PressedState.HIDDEN)

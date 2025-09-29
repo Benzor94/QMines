@@ -1,5 +1,8 @@
 from collections.abc import Iterator
+from enum import Enum
 from random import sample
+from threading import Lock
+
 from PySide6.QtCore import QObject, Signal, Slot
 
 from qmines.board.board_view import BoardView
@@ -7,10 +10,15 @@ from qmines.config import Config
 from qmines.tile.tile import Tile
 
 
+class GameOverReason(Enum):
+    WIN = 0
+    LOSS = 1
+
+
 class Board(QObject):
 
     flag_changed = Signal(int)
-    mine_triggered = Signal()
+    game_over = Signal(GameOverReason)
 
     def __init__(self, config: Config) -> None:
         self._n_rows = config.number_of_rows
@@ -19,6 +27,8 @@ class Board(QObject):
         self._size = self._n_rows * self._n_cols
         self._initialized = False
         self._game_over = False
+        self._revealed_tiles = 0
+        self._lock = Lock()
         self._tiles = [self._create_tile(idx) for idx in range(self._size)]
         self._view = BoardView(self._n_rows / self._n_cols, {(t.row, t.col): t.view for t in self._tiles})
     
@@ -27,6 +37,10 @@ class Board(QObject):
     
     def __iter__(self) -> Iterator[Tile]:
         return iter(self._tiles)
+    
+    @property
+    def view(self) -> BoardView:
+        return self._view
     
     @Slot(int, int)
     def on_left_click(self, row: int, col: int) -> None:
@@ -46,7 +60,9 @@ class Board(QObject):
                 self._cascade_reveal(row, col)
             return
         if clicked_tile.is_revealed and clicked_tile.proximity_number != 0 and not clicked_tile.is_mine:
-            self._cascade_reveal(row, col)
+            number_of_nearby_flags = sum(1 for tile in self._proximity_iterator(row, col) if tile.is_flag)
+            if number_of_nearby_flags == clicked_tile.proximity_number:
+                self._cascade_reveal(row, col)
     
     @Slot(int, int)
     def on_right_click(self, row: int, col: int) -> None:
@@ -71,11 +87,12 @@ class Board(QObject):
     def _reveal_tile(self, tile: Tile) -> None:
         if tile.is_mine:
             tile.exploded = True
-            self.mine_triggered.emit()
             self._game_over = True
             self._reveal_all_tiles()
+            self.game_over.emit(GameOverReason.LOSS)
         else:
             tile.reveal()
+            self._register_revealed_tile()
     
     def _reveal_all_tiles(self) -> None:
         for tile in self:
@@ -84,6 +101,13 @@ class Board(QObject):
     def _cascade_reveal(self, row: int, col: int) -> None:
         for neighbour in self._proximity_iterator(row, col):
             self.on_left_click(neighbour.row, neighbour.col)
+    
+    def _register_revealed_tile(self) -> None:
+        with self._lock:
+            self._revealed_tiles +=1
+            if self._size - self._revealed_tiles == self._n_mines:
+                self._game_over = True
+                self.game_over.emit(GameOverReason.WIN)
     
     def _set_up_board(self, first_clicked_row: int, first_clicked_column: int) -> None:
         non_adjacent_tiles = list(self._proximity_iterator(first_clicked_row, first_clicked_column, on_complement=True))
