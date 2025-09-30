@@ -24,6 +24,7 @@ class Board(QObject):
     flag_changed = Signal(FlagCountChange)
     game_over = Signal(GameOverReason)
     trigger_tile = Signal(int, int)
+    game_started = Signal()
 
     def __init__(self, config: Config) -> None:
         super().__init__()
@@ -60,6 +61,7 @@ class Board(QObject):
             self._set_up_board(row, col)
             self._initialized = True
             self.trigger_tile.emit(row, col)
+            self.game_started.emit()
             return
         clicked_tile = self[row, col]
         if clicked_tile.is_flag:
@@ -118,6 +120,7 @@ class Board(QObject):
             if self._size - self._revealed_tiles == self._n_mines:
                 self._game_over = True
                 self.game_over.emit(GameOverReason.WIN)
+                self._reveal_all_tiles()
     
     def _set_up_board(self, first_clicked_row: int, first_clicked_column: int) -> None:
         non_adjacent_tiles = list(self._proximity_iterator(first_clicked_row, first_clicked_column, on_complement=True))
