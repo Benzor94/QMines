@@ -89,9 +89,11 @@ class Tile(QObject):
         self._is_revealed = True
         if self.exploded:
             self.view.set_display_state(IconState.EXPLOSION)
+            self.view.set_pressed_state(PressedState.FLAT)
         elif self.is_mine:
             self.view.set_display_state(IconState.MINE)
+            self.view.set_pressed_state(PressedState.FLAT)
         else:
             self.view.set_display_state(self.proximity_number)
-        #self.view.set_pressed_state(PressedState.FLAT if self.proximity_number != 0 else PressedState.HIDDEN)
-        self.view.set_pressed_state(PressedState.FLAT)
+            self.view.set_pressed_state(PressedState.HIDDEN if self.proximity_number == 0 else PressedState.FLAT)
+        
