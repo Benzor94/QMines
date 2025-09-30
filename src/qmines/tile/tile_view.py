@@ -1,4 +1,3 @@
-from enum import Enum
 from pathlib import Path
 from typing import Final, override
 
@@ -6,24 +5,13 @@ from PySide6.QtCore import QSize, Qt, Signal
 from PySide6.QtGui import QIcon, QMouseEvent, QResizeEvent
 from PySide6.QtWidgets import QPushButton, QSizePolicy
 
+from qmines.enums import IconState, PressedState
 from qmines.utilities import get_resources_dir, set_font_size_based_on_height
-
-
-class IconState(Enum):
-    EMPTY = 0
-    FLAG = 1
-    MINE = 2
-    EXPLOSION = 3   
-
-class PressedState(Enum):
-    RAISED = 0
-    FLAT = 1
-    HIDDEN = 2
 
 type DisplayState = IconState | int
 
-class TileView(QPushButton):
 
+class TileView(QPushButton):
     MIN_SIZE: Final[int] = 32
 
     MINE_ICON: Final[Path] = get_resources_dir() / 'mine256.png'
@@ -36,7 +24,7 @@ class TileView(QPushButton):
     def __init__(self) -> None:
         super().__init__()
         self._set_size_properties()
-    
+
     def set_display_state(self, state: DisplayState) -> None:
         match state:
             case IconState() as icon_state:
@@ -58,7 +46,7 @@ class TileView(QPushButton):
                 else:
                     raise ValueError(f'Can display only integers 0 - 8 on tile, attempted to display {int_state}.')
                 self._set_text(txt)
-    
+
     def set_pressed_state(self, state: PressedState) -> None:
         match state:
             case PressedState.RAISED:
@@ -71,7 +59,7 @@ class TileView(QPushButton):
                 self.setDown(False)
             case PressedState.HIDDEN:
                 self.setVisible(False)
-    
+
     @override
     def sizeHint(self) -> QSize:
         return QSize(self.MIN_SIZE, self.MIN_SIZE)
@@ -86,7 +74,7 @@ class TileView(QPushButton):
     def mouseReleaseEvent(self, e: QMouseEvent, /):
         if e.button() == Qt.MouseButton.LeftButton:
             self.setDown(False)
-            self.left_clicked.emit()            
+            self.left_clicked.emit()
         elif e.button() == Qt.MouseButton.RightButton:
             self.right_clicked.emit()
 
@@ -96,14 +84,14 @@ class TileView(QPushButton):
         self.setSizePolicy(size_policy)
         set_font_size_based_on_height(self, self.size().height())
         self._adjust_icon_size(self.size().height())
-    
+
     def _set_text(self, txt: str) -> None:
         self.setIcon(QIcon())
         self.setText(txt)
-    
+
     def _set_icon(self, icon: QIcon) -> None:
         self.setText('')
         self.setIcon(icon)
-    
+
     def _adjust_icon_size(self, height: int) -> None:
         self.setIconSize(QSize(height - 2, height - 2)) if height > 2 else self.setIconSize(QSize(height, height))

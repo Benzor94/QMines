@@ -20,6 +20,10 @@ class ToolbarView(QToolBar):
     def time_tracker(self) -> TimeTracker:
         return self._time_tracker
     
+    @property
+    def mine_counter(self) -> MineCounter:
+        return self._mine_counter
+    
     def _set_toolbar_properties(self) -> None:
         self.toggleViewAction().setEnabled(False)
         self.setMovable(False)

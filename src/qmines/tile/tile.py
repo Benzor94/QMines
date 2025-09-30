@@ -1,6 +1,7 @@
 from PySide6.QtCore import QObject, Signal, Slot
 
-from qmines.tile.tile_view import IconState, PressedState, TileView
+from qmines.enums import IconState, PressedState
+from qmines.tile.tile_view import TileView
 
 
 class Tile(QObject):
@@ -58,11 +59,11 @@ class Tile(QObject):
             self._proximity_number = value
             return
         raise ValueError(f'Proximity number must be between 0 and 8 (inclusive). It was {value}.')
-    
+
     @property
     def exploded(self) -> bool:
         return self._exploded
-    
+
     @exploded.setter
     def exploded(self, value: bool) -> None:
         self._exploded = value
@@ -81,7 +82,7 @@ class Tile(QObject):
             self.view.set_display_state(IconState.FLAG)
         else:
             self.view.set_display_state(IconState.EMPTY)
-    
+
     def reveal(self) -> None:
         self._is_revealed = True
         if self.exploded:
