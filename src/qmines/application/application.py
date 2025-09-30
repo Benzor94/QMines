@@ -1,5 +1,4 @@
 from PySide6.QtCore import QObject, Signal, Slot
-from PySide6.QtWidgets import QLabel
 
 from qmines.application.mainwindow import MainWindow
 from qmines.application.pause_view import PauseView
