@@ -1,6 +1,8 @@
+
 from PySide6.QtCore import QObject, Signal, Slot
 
 from qmines.enums import IconState, PressedState
+from qmines.tile.tile_icons import TileIconRepository
 from qmines.tile.tile_view import TileView
 
 
@@ -8,7 +10,7 @@ class Tile(QObject):
     left_clicked = Signal(int, int)
     right_clicked = Signal(int, int)
 
-    def __init__(self, row: int, col: int) -> None:
+    def __init__(self, row: int, col: int, icons: TileIconRepository) -> None:
         super().__init__()
         self._row = row
         self._col = col
@@ -17,7 +19,7 @@ class Tile(QObject):
         self._is_mine = False
         self._proximity_number = -1
         self._exploded = False
-        self._view = TileView()
+        self._view = TileView(icons)
         self.view.left_clicked.connect(self.on_left_click)
         self.view.right_clicked.connect(self.on_right_click)
 
@@ -91,4 +93,5 @@ class Tile(QObject):
             self.view.set_display_state(IconState.MINE)
         else:
             self.view.set_display_state(self.proximity_number)
-        self.view.set_pressed_state(PressedState.FLAT if self.proximity_number != 0 else PressedState.HIDDEN)
+        #self.view.set_pressed_state(PressedState.FLAT if self.proximity_number != 0 else PressedState.HIDDEN)
+        self.view.set_pressed_state(PressedState.FLAT)

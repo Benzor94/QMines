@@ -1,4 +1,3 @@
-from pathlib import Path
 from typing import Final, override
 
 from PySide6.QtCore import QSize, Qt, Signal
@@ -6,7 +5,8 @@ from PySide6.QtGui import QIcon, QMouseEvent, QResizeEvent
 from PySide6.QtWidgets import QPushButton, QSizePolicy
 
 from qmines.enums import IconState, PressedState
-from qmines.utilities import get_resources_dir, set_font_size_based_on_height
+from qmines.tile.tile_icons import TileIconRepository
+from qmines.utilities import set_font_size_based_on_height
 
 type DisplayState = IconState | int
 
@@ -14,29 +14,26 @@ type DisplayState = IconState | int
 class TileView(QPushButton):
     MIN_SIZE: Final[int] = 32
 
-    MINE_ICON: Final[Path] = get_resources_dir() / 'mine256.png'
-    FLAG_ICON: Final[Path] = get_resources_dir() / 'flag256.png'
-    BOOM_ICON: Final[Path] = get_resources_dir() / 'explosion256.png'
-
     left_clicked = Signal()
     right_clicked = Signal()
 
-    def __init__(self) -> None:
+    def __init__(self, icons: TileIconRepository) -> None:
         super().__init__()
         self._set_size_properties()
+        self._icons = icons
 
     def set_display_state(self, state: DisplayState) -> None:
         match state:
             case IconState() as icon_state:
                 match icon_state:
                     case IconState.EMPTY:
-                        icon = QIcon()
+                        icon = self._icons.empty
                     case IconState.FLAG:
-                        icon = QIcon(str(self.FLAG_ICON.resolve()))
+                        icon = self._icons.flag
                     case IconState.MINE:
-                        icon = QIcon(str(self.MINE_ICON.resolve()))
+                        icon = self._icons.mine
                     case IconState.EXPLOSION:
-                        icon = QIcon(str(self.BOOM_ICON.resolve()))
+                        icon = self._icons.explosion
                 self._set_icon(icon)
             case int() as int_state:
                 if int_state == 0:

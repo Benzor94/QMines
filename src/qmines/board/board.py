@@ -8,6 +8,7 @@ from qmines.board.board_view import BoardView
 from qmines.config import Config
 from qmines.enums import FlagCountChange, GameOverReason
 from qmines.tile.tile import Tile
+from qmines.tile.tile_icons import TileIconRepository
 
 
 class Board(QObject):
@@ -22,6 +23,7 @@ class Board(QObject):
         self._n_cols = config.number_of_columns
         self._n_mines = config.number_of_mines
         self._size = self._n_rows * self._n_cols
+        self._icons = TileIconRepository()
         self._initialized = False
         self._game_over = False
         self._revealed_tiles = 0
@@ -81,7 +83,7 @@ class Board(QObject):
             self.flag_changed.emit(FlagCountChange.ADDED)
 
     def _create_tile(self, idx: int) -> Tile:
-        tile = Tile(*self._index_to_coordinates(idx))
+        tile = Tile(*self._index_to_coordinates(idx), self._icons)
         tile.left_clicked.connect(self.on_left_click)
         tile.right_clicked.connect(self.on_right_click)
         return tile
@@ -89,8 +91,8 @@ class Board(QObject):
     def _reveal_tile(self, tile: Tile) -> None:
         if tile.is_mine:
             tile.exploded = True
-            self._game_over = True
             self._reveal_all_tiles()
+            self._game_over = True
             self.game_over.emit(GameOverReason.LOSS)
         else:
             tile.reveal()
@@ -108,9 +110,9 @@ class Board(QObject):
         with self._lock:
             self._revealed_tiles += 1
             if self._size - self._revealed_tiles == self._n_mines:
+                self._reveal_all_tiles()
                 self._game_over = True
                 self.game_over.emit(GameOverReason.WIN)
-                self._reveal_all_tiles()
 
     def _set_up_board(self, first_clicked_row: int, first_clicked_column: int) -> None:
         non_adjacent_tiles = list(self._proximity_iterator(first_clicked_row, first_clicked_column, on_complement=True))

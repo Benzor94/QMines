@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import QApplication
 
-from qmines.application import Application
+from qmines.application.application import Application
 
 
 def main() -> None:

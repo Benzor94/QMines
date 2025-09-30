@@ -1,10 +1,11 @@
 from PySide6.QtCore import QObject, Signal, Slot
 from PySide6.QtWidgets import QLabel
 
+from qmines.application.mainwindow import MainWindow
+from qmines.application.pause_view import PauseView
 from qmines.board.board import Board
 from qmines.config import Config, read_config_from_file, write_config_to_file
 from qmines.enums import GameOverReason, PauseAvailability, TimerStateChange
-from qmines.mainwindow import MainWindow
 from qmines.toolbar.toolbar import Toolbar
 
 
@@ -16,8 +17,7 @@ class Application(QObject):
         super().__init__()
         self._config = read_config_from_file()
         self._board = None
-        self._pause_view = QLabel('Hi there')
-        self._pause_view.setStyleSheet('border: 2px dashed red')
+        self._pause_view = None
         self._toolbar = None
         self._new_game_dialog = None
         self._mainwindow = None
@@ -43,6 +43,7 @@ class Application(QObject):
         write_config_to_file(config)
         self._board = Board(config)
         self._toolbar = Toolbar(self._config)
+        self._pause_view = PauseView()
         self._mainwindow = MainWindow(self._board.view, self._pause_view, self._toolbar.view)
         # Connections
         self._board.game_started.connect(self.on_game_start)
