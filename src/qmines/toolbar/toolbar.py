@@ -1,14 +1,18 @@
 from threading import Lock
-from PySide6.QtCore import QObject, QTimer, Slot
+
+from PySide6.QtCore import QObject, QTimer, Signal, Slot
 
 from qmines.config import Config
-from qmines.enums import FlagCountChange, TimerStateChange
+from qmines.enums import FlagCountChange, PauseAvailability, TimerStateChange
 from qmines.toolbar.actions import NewGameAction, PauseAction
 from qmines.toolbar.counters import MineCounter, TimeTracker
 from qmines.toolbar.toolbar_view import ToolbarView
 
 
 class Toolbar(QObject):
+
+    game_paused = Signal(bool)
+
     def __init__(self, config: Config) -> None:
         super().__init__()
         self._timer = self._create_timer()
@@ -16,6 +20,7 @@ class Toolbar(QObject):
         self._lock = Lock()
         self._seconds_elapsed = 0
         self._number_of_remaining_mines = config.number_of_mines
+        self.view.pause_action.toggled.connect(self.game_paused.emit)
 
     @property
     def view(self) -> ToolbarView:
@@ -39,6 +44,14 @@ class Toolbar(QObject):
                 case FlagCountChange.REMOVED:
                     self._number_of_remaining_mines += 1
             self.view.mine_counter.update_counter(self._number_of_remaining_mines)
+    
+    @Slot(PauseAvailability)
+    def on_pause_availability_change(self, availability: PauseAvailability) -> None:
+        match availability:
+            case PauseAvailability.ENABLED:
+                self.view.pause_action.setEnabled(True)
+            case PauseAvailability.DISABLED:
+                self.view.pause_action.setEnabled(False)
 
     @Slot()
     def on_timer_period(self) -> None:

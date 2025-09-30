@@ -19,3 +19,5 @@ class PauseAction(QAction):
         super().__init__()
         self.setIcon(QIcon(str(self.ICON.resolve())))
         self.setToolTip('Pause/resume the game')
+        self.setCheckable(True)
+        self.setEnabled(False)

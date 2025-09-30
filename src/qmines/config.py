@@ -38,6 +38,9 @@ def read_config_from_file() -> Config:
 
 def write_config_to_file(config: Config) -> None:
     config_dict = dict(number_of_rows = config.number_of_rows, number_of_columns = config.number_of_columns, number_of_mines = config.number_of_mines)
+    config_file = _get_config_file()
+    if not (parent := config_file.parent).exists():
+        parent.mkdir(parents=True)
     with open(_get_config_file(), 'w') as f:
         json.dump(config_dict, f, indent=2)
 

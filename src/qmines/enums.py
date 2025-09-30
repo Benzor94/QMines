@@ -27,3 +27,7 @@ class PressedState(Enum):
 class TimerStateChange(Enum):
     START = 0
     STOP = 1
+
+class PauseAvailability(Enum):
+    ENABLED = 0
+    DISABLED = 1
