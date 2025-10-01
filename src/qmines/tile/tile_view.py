@@ -24,19 +24,23 @@ class TileView(QPushButton):
     def __init__(self) -> None:
         super().__init__()
         self._set_size_properties()
+        self._empty_icon = QIcon('')
+        self._flag_icon = get_qicon_from_path(self.FLAG_ICON)
+        self._mine_icon = get_qicon_from_path(self.MINE_ICON)
+        self._boom_icon = get_qicon_from_path(self.BOOM_ICON)
 
     def set_display_state(self, state: DisplayState) -> None:
         match state:
             case IconState() as icon_state:
                 match icon_state:
                     case IconState.EMPTY:
-                        icon = QIcon('')
+                        icon = self._empty_icon
                     case IconState.FLAG:
-                        icon = get_qicon_from_path(self.FLAG_ICON)
+                        icon = self._flag_icon
                     case IconState.MINE:
-                        icon = get_qicon_from_path(self.MINE_ICON)
+                        icon = self._mine_icon
                     case IconState.EXPLOSION:
-                        icon = get_qicon_from_path(self.BOOM_ICON)
+                        icon = self._boom_icon
                 self._set_icon(icon)
             case int() as int_state:
                 if int_state == 0:
