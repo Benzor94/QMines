@@ -16,6 +16,7 @@ class Application(QObject):
     def __init__(self) -> None:
         super().__init__()
         self._config = read_config_from_file()
+        self._game_over = False
         self._board = None
         self._pause_view = None
         self._toolbar = None
@@ -32,6 +33,7 @@ class Application(QObject):
     def on_game_over(self, reason: GameOverReason) -> None:
         self.time_tracking_state_change.emit(TimerStateChange.STOP)
         self.pause_availability_state_changed.emit(PauseAvailability.DISABLED)
+        self._game_over = True
         result = GameOverMessage(reason).exec()
         match result:
             case GameOverMessage.StandardButton.Ok:
@@ -44,9 +46,14 @@ class Application(QObject):
         if self._mainwindow is not None:
             self._mainwindow.set_paused(paused)
             self.time_tracking_state_change.emit(TimerStateChange.STOP if paused else TimerStateChange.START)
+    
+    @Slot()
+    def on_new_game(self) -> None:
+        ...
 
     def _set_up_game(self, config: Config) -> None:
         write_config_to_file(config)
+        self._game_over = False
         self._board = Board(config)
         self._toolbar = Toolbar(self._config)
         self._pause_view = PauseView()
@@ -58,3 +65,4 @@ class Application(QObject):
         self.time_tracking_state_change.connect(self._toolbar.on_time_tracking_state_change)
         self._toolbar.game_paused.connect(self.on_game_paused)
         self.pause_availability_state_changed.connect(self._toolbar.on_pause_availability_change)
+        self._toolbar.new_game.connect(self.on_new_game)

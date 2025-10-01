@@ -8,7 +8,6 @@ class GameOverMessage(QMessageBox):
     def __init__(self, reason: GameOverReason) -> None:
         super().__init__()
         self._reason = reason
-        self.setWindowTitle('QMines')
         self._set_up_text()
         self._set_up_buttons()
         self._set_up_icons()
@@ -17,10 +16,13 @@ class GameOverMessage(QMessageBox):
         match self._reason:
             case GameOverReason.WIN:
                 text = 'Congratulations, you have won the game!'
+                title = 'Game Won'
             case GameOverReason.LOSS:
                 text = 'You have lost the game.'
+                title = 'Game Lost'
         self.setText(text)
         self.setInformativeText('Do you want to start a new game?')
+        self.setWindowTitle(title)
     
     def _set_up_buttons(self) -> None:
         self.setStandardButtons(QMessageBox.StandardButton.Ok | QMessageBox.StandardButton.Cancel)

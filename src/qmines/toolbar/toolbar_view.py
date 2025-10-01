@@ -34,6 +34,10 @@ class ToolbarView(QToolBar):
     def pause_action(self) -> PauseAction:
         return self._pause_action
     
+    @property
+    def new_game_action(self) -> NewGameAction:
+        return self._new_game_action
+    
     def _set_toolbar_properties(self) -> None:
         self.toggleViewAction().setEnabled(False)
         self.setMovable(False)

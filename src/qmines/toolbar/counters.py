@@ -1,3 +1,6 @@
+from pathlib import Path
+from typing import Final
+
 from PySide6.QtWidgets import QFrame, QHBoxLayout, QLabel, QLCDNumber
 
 from qmines.utilities import get_qicon_from_path, get_resources_dir
@@ -5,7 +8,8 @@ from qmines.utilities import get_qicon_from_path, get_resources_dir
 
 class MineCounter(QFrame):
 
-    ICON = get_resources_dir() / 'mine256.png'
+    ICON: Final[Path] = get_resources_dir() / 'mine256.png'
+    ICON_SIZE: Final[int] = 20
 
     def __init__(self, n_mines: int) -> None:
         super().__init__()
@@ -14,7 +18,7 @@ class MineCounter(QFrame):
         self._separator = QLabel(':')
         self._counter = QLCDNumber()
         self._layout = QHBoxLayout()
-        self._label.setPixmap(get_qicon_from_path(self.ICON).pixmap(16, 16))
+        self._label.setPixmap(get_qicon_from_path(self.ICON).pixmap(self.ICON_SIZE, self.ICON_SIZE))
         self.setToolTip('Number of mines remaining')
         self._set_counter_properties()
         self._set_layout_properties()
@@ -42,7 +46,8 @@ class MineCounter(QFrame):
 
 class TimeTracker(QFrame):
 
-    ICON = get_resources_dir() / 'clock16.png'
+    ICON: Final[Path] = get_resources_dir() / 'clock16.png'
+    ICON_SIZE: Final[int] = 20
 
     def __init__(self) -> None:
         super().__init__()
@@ -50,7 +55,7 @@ class TimeTracker(QFrame):
         self._separator = QLabel(':')
         self._counter = QLCDNumber()
         self._layout = QHBoxLayout()
-        self._label.setPixmap(get_qicon_from_path(self.ICON).pixmap(16, 16))
+        self._label.setPixmap(get_qicon_from_path(self.ICON).pixmap(self.ICON_SIZE, self.ICON_SIZE))
         self.setToolTip('Seconds elapsed')
         self._set_counter_properties()
         self._set_layout_properties()        

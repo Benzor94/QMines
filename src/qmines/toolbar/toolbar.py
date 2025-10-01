@@ -12,6 +12,7 @@ from qmines.toolbar.toolbar_view import ToolbarView
 class Toolbar(QObject):
 
     game_paused = Signal(bool)
+    new_game = Signal()
 
     def __init__(self, config: Config) -> None:
         super().__init__()
@@ -21,6 +22,7 @@ class Toolbar(QObject):
         self._seconds_elapsed = 0
         self._number_of_remaining_mines = config.number_of_mines
         self.view.pause_action.toggled.connect(self.game_paused.emit)
+        self.view.new_game_action.triggered.connect(self.new_game.emit)
 
     @property
     def view(self) -> ToolbarView:
