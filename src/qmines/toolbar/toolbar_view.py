@@ -1,3 +1,5 @@
+from typing import Final
+
 from PySide6.QtCore import QSize
 from PySide6.QtGui import Qt
 from PySide6.QtWidgets import QSizePolicy, QToolBar, QWidget
@@ -7,6 +9,9 @@ from qmines.toolbar.counters import MineCounter, TimeTracker
 
 
 class ToolbarView(QToolBar):
+    
+    HEIGHT: Final[int] = 40
+    ICON_SIZE: Final[int] = 20
 
     def __init__(self, new_game_action: NewGameAction, pause_action: PauseAction, mine_counter: MineCounter, time_tracker: TimeTracker) -> None:
         super().__init__()
@@ -33,8 +38,8 @@ class ToolbarView(QToolBar):
         self.toggleViewAction().setEnabled(False)
         self.setMovable(False)
         self.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonIconOnly)
-        self.setIconSize(QSize(16, 16))
-        self.setFixedHeight(32)
+        self.setIconSize(QSize(self.ICON_SIZE, self.ICON_SIZE))
+        self.setFixedHeight(self.HEIGHT)
     
     def _add_buttons(self) -> None:
         self.addAction(self._new_game_action)
