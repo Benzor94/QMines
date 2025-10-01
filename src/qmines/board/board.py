@@ -8,7 +8,6 @@ from qmines.board.board_view import BoardView
 from qmines.config import Config
 from qmines.enums import FlagCountChange, GameOverReason
 from qmines.tile.tile import Tile
-from qmines.tile.tile_icons import TileIconRepository
 
 
 class Board(QObject):
@@ -23,7 +22,6 @@ class Board(QObject):
         self._n_cols = config.number_of_columns
         self._n_mines = config.number_of_mines
         self._size = self._n_rows * self._n_cols
-        self._icons = TileIconRepository()
         self._initialized = False
         self._game_over = False
         self._revealed_tiles = 0
@@ -83,7 +81,7 @@ class Board(QObject):
             self.flag_changed.emit(FlagCountChange.ADDED)
 
     def _create_tile(self, idx: int) -> Tile:
-        tile = Tile(*self._index_to_coordinates(idx), self._icons)
+        tile = Tile(*self._index_to_coordinates(idx))
         tile.left_clicked.connect(self.on_left_click)
         tile.right_clicked.connect(self.on_right_click)
         return tile

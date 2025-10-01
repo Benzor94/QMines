@@ -1,6 +1,6 @@
 from PySide6.QtGui import QAction, QIcon
 
-from qmines.utilities import get_resources_dir
+from qmines.utilities import get_qicon_from_path, get_resources_dir
 
 
 class NewGameAction(QAction):
@@ -9,7 +9,7 @@ class NewGameAction(QAction):
 
     def __init__(self) -> None:
         super().__init__()
-        self.setIcon(QIcon(str(self.ICON.resolve())))
+        self.setIcon(get_qicon_from_path(self.ICON))
         self.setToolTip('Start a new game')
 
 class PauseAction(QAction):
@@ -17,7 +17,7 @@ class PauseAction(QAction):
 
     def __init__(self) -> None:
         super().__init__()
-        self.setIcon(QIcon(str(self.ICON.resolve())))
+        self.setIcon(get_qicon_from_path(self.ICON))
         self.setToolTip('Pause/resume the game')
         self.setCheckable(True)
         self.setEnabled(False)
