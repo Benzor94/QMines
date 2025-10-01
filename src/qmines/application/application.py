@@ -1,5 +1,6 @@
 from PySide6.QtCore import QObject, Signal, Slot
 
+from qmines.application.game_over_message import GameOverMessage
 from qmines.application.mainwindow import MainWindow
 from qmines.application.pause_view import PauseView
 from qmines.board.board import Board
@@ -28,9 +29,15 @@ class Application(QObject):
         self.pause_availability_state_changed.emit(PauseAvailability.ENABLED)
 
     @Slot(GameOverReason)
-    def on_game_over(self) -> None:
+    def on_game_over(self, reason: GameOverReason) -> None:
         self.time_tracking_state_change.emit(TimerStateChange.STOP)
         self.pause_availability_state_changed.emit(PauseAvailability.DISABLED)
+        result = GameOverMessage(reason).exec()
+        match result:
+            case GameOverMessage.StandardButton.Ok:
+                print("OK")
+            case GameOverMessage.StandardButton.Cancel:
+                print("Bruh")
     
     @Slot(bool)
     def on_game_paused(self, paused: bool) -> None:
