@@ -1,0 +1,4 @@
+* Game over dialog is not wired to new game dialog
+* For big boards, performing clicks is slow, graphics sometimes don't get displayed, and there was even a recursion depth issue.
+    Investigate how current algo differs from the old one and find the problem.
+* Refactor where ugly or inconsistent (make enums internal, ...)

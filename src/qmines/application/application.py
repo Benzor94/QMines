@@ -6,6 +6,7 @@ from qmines.application.pause_view import PauseView
 from qmines.board.board import Board
 from qmines.config import Config, read_config_from_file, write_config_to_file
 from qmines.enums import GameOverReason, PauseAvailability, TimerStateChange
+from qmines.new_game_selector.new_game_selector import NewGameSelector
 from qmines.toolbar.toolbar import Toolbar
 
 
@@ -17,6 +18,7 @@ class Application(QObject):
         super().__init__()
         self._config = read_config_from_file()
         self._game_over = False
+        self._paused = False
         self._board = None
         self._pause_view = None
         self._toolbar = None
@@ -44,12 +46,21 @@ class Application(QObject):
     @Slot(bool)
     def on_game_paused(self, paused: bool) -> None:
         if self._mainwindow is not None:
+            self._paused = paused
             self._mainwindow.set_paused(paused)
             self.time_tracking_state_change.emit(TimerStateChange.STOP if paused else TimerStateChange.START)
     
     @Slot()
     def on_new_game(self) -> None:
-        ...
+        assert self._mainwindow is not None
+        is_already_paused = self._paused
+        if not is_already_paused:
+            self.on_game_paused(True)
+        result = NewGameSelector(self._mainwindow, self._config).result
+        if not is_already_paused:
+            self.on_game_paused(False)
+        if result is not None:
+            self._set_up_game(result)
 
     def _set_up_game(self, config: Config) -> None:
         write_config_to_file(config)
