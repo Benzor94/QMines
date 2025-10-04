@@ -3,10 +3,10 @@ from pathlib import Path
 from typing import Final, override
 
 from PySide6.QtCore import QSize, Qt, Signal
-from PySide6.QtGui import QIcon, QMouseEvent, QResizeEvent
+from PySide6.QtGui import QFont, QIcon, QMouseEvent, QResizeEvent
 from PySide6.QtWidgets import QPushButton, QSizePolicy
 
-from qmines.utilities import get_qicon_from_path, get_resources_dir, set_font_size_based_on_height
+from qmines.common import get_qicon_from_path, get_resources_dir
 
 type DisplayState = TileView.IconState | int
 
@@ -83,7 +83,7 @@ class TileView(QPushButton):
     @override
     def resizeEvent(self, event: QResizeEvent) -> None:
         new_height = event.size().height()
-        set_font_size_based_on_height(self, new_height)
+        self._set_font_size_based_on_height(new_height)
         self._adjust_icon_size(new_height)
 
     @override
@@ -98,7 +98,7 @@ class TileView(QPushButton):
         size_policy = QSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
         size_policy.setRetainSizeWhenHidden(True)
         self.setSizePolicy(size_policy)
-        set_font_size_based_on_height(self, self.size().height())
+        self._set_font_size_based_on_height(self.size().height())
         self._adjust_icon_size(self.size().height())
 
     def _set_text(self, txt: str) -> None:
@@ -111,3 +111,9 @@ class TileView(QPushButton):
 
     def _adjust_icon_size(self, height: int) -> None:
         self.setIconSize(QSize(height - 2, height - 2)) if height > 2 else self.setIconSize(QSize(height, height))
+    
+    def _set_font_size_based_on_height(self, height: int) -> None:
+        new_size = height // 2
+        current_font = self.font()
+        if current_font.pointSize() != new_size:
+            self.setFont(QFont(current_font.family(), new_size))

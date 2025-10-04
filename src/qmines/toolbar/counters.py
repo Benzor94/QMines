@@ -3,7 +3,7 @@ from typing import Final
 
 from PySide6.QtWidgets import QFrame, QHBoxLayout, QLabel, QLCDNumber
 
-from qmines.utilities import get_qicon_from_path, get_resources_dir
+from qmines.common import get_qicon_from_path, get_resources_dir
 
 
 class MineCounter(QFrame):

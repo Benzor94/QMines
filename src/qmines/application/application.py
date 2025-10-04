@@ -6,7 +6,7 @@ from qmines.application.mainwindow import MainWindow
 from qmines.application.pause_view import PauseView
 from qmines.board.board import Board
 from qmines.config import Config, read_config_from_file, write_config_to_file
-from qmines.enums import GameOverReason
+from qmines.common import GameOverReason
 from qmines.new_game_selector.new_game_dialog import NewGameDialog
 from qmines.toolbar.toolbar import Toolbar
 
@@ -42,14 +42,14 @@ class Application(QObject):
         result = GameOverMessage(reason).exec()
         if result == GameOverMessage.StandardButton.Ok:
             self.on_new_game()
-    
+
     @Slot(bool)
     def on_game_paused(self, paused: bool) -> None:
         if self._mainwindow is not None and not self._game_over:
             self._paused = paused
             self._mainwindow.set_paused(paused)
             self.time_tracking_state_change.emit(Toolbar.TimerStateChange.STOP if paused else Toolbar.TimerStateChange.START)
-    
+
     @Slot()
     def on_new_game(self) -> None:
         assert self._mainwindow is not None
