@@ -1,4 +1,5 @@
 from enum import Enum
+from pathlib import Path
 
 from PySide6.QtCore import Slot
 from PySide6.QtGui import QAction
@@ -15,6 +16,7 @@ class NewGameAction(QAction):
         self.setText('New')
         self.setToolTip('Start a new game')
 
+
 class ResetGameAction(QAction):
     ICON = get_resources_dir() / 'reset16.png'
 
@@ -23,6 +25,7 @@ class ResetGameAction(QAction):
         self.setIcon(get_qicon_from_path(self.ICON))
         self.setText('Reset')
         self.setToolTip('Start over the game with the same settings')
+
 
 class PauseAction(QAction):
     PAUSE_ICON = get_resources_dir() / 'pause16.png'
@@ -55,3 +58,23 @@ class PauseAction(QAction):
                 self.setIcon(self._pause_icon)
             case cls.State.PLAY:
                 self.setIcon(self._play_icon)
+
+
+class QuitAction(QAction):
+    ICON = get_resources_dir() / 'cross16.png'
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.setIcon(get_qicon_from_path(self.ICON))
+        self.setText('Quit')
+        self.setToolTip('Quit the game')
+
+
+class AboutAction(QAction):
+    ICON = get_resources_dir() / 'info16.png'
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.setIcon(get_qicon_from_path(self.ICON))
+        self.setText('About')
+        self.setToolTip('Display information')

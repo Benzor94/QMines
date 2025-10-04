@@ -8,6 +8,7 @@ from qmines.application.start_over_message import StartOverMessage
 from qmines.board.board import Board
 from qmines.common import GameOverReason
 from qmines.config import Config, read_config_from_file, write_config_to_file
+from qmines.controls.menubar import MenuBar
 from qmines.controls.toolbar import Toolbar
 from qmines.new_game_selector.new_game_dialog import NewGameDialog
 
@@ -26,6 +27,7 @@ class Application(QObject):
         self._board = None
         self._pause_view = None
         self._toolbar = None
+        self._menubar = None
         self._new_game_dialog = None
         self._mainwindow = None
         self._set_up_game(self._config)
@@ -88,12 +90,15 @@ class Application(QObject):
         self._game_over = False
         self._board = Board(config)
         self._toolbar = Toolbar(self._config)
+        self._menubar = MenuBar()
         self._pause_view = PauseView()
-        self._mainwindow = MainWindow(self._board.view, self._pause_view, self._toolbar.view)
+        self._mainwindow = MainWindow(self._board.view, self._pause_view, self._toolbar.view, self._menubar)
         # Connections
+        # Board
         self._board.game_started.connect(self.on_game_start)
         self._board.game_over.connect(self.on_game_over)
         self._board.flag_changed.connect(self._toolbar.on_flag_count_change)
+        # Toolbar
         self.time_tracking_state_change.connect(self._toolbar.on_time_tracking_state_change)
         self._toolbar.game_paused.connect(self.on_game_paused)
         self.pause_availability_state_changed.connect(self._toolbar.on_pause_availability_change)

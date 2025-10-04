@@ -1,12 +1,13 @@
-from PySide6.QtWidgets import QFrame, QMainWindow, QSizePolicy, QStackedLayout, QToolBar, QWidget
+from PySide6.QtWidgets import QFrame, QMainWindow, QMenuBar, QSizePolicy, QStackedLayout, QToolBar, QWidget
 
 
 class MainWindow(QMainWindow):
-    def __init__(self, board_view: QWidget, pause_view: QWidget, toolbar_view: QToolBar) -> None:
+    def __init__(self, board_view: QWidget, pause_view: QWidget, toolbar_view: QToolBar, menubar: QMenuBar) -> None:
         super().__init__()
         self._board_view = board_view
         self._pause_view = pause_view
         self._toolbar = toolbar_view
+        self._menubar = menubar
         self._layout = QStackedLayout()
         self.setWindowTitle('QMines')
         self._set_size_properties()
@@ -24,6 +25,7 @@ class MainWindow(QMainWindow):
 
     def _set_layout_properties(self) -> None:
         self.addToolBar(self._toolbar)
+        self.setMenuBar(self._menubar)
         frame = QFrame()
         frame.setLayout(self._layout)
         self._layout.addWidget(self._board_view)
