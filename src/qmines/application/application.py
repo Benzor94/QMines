@@ -5,8 +5,8 @@ from qmines.application.game_over_message import GameOverMessage
 from qmines.application.mainwindow import MainWindow
 from qmines.application.pause_view import PauseView
 from qmines.board.board import Board
-from qmines.config import Config, read_config_from_file, write_config_to_file
 from qmines.common import GameOverReason
+from qmines.config import Config, read_config_from_file, write_config_to_file
 from qmines.new_game_selector.new_game_dialog import NewGameDialog
 from qmines.toolbar.toolbar import Toolbar
 
