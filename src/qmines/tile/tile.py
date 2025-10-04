@@ -76,6 +76,10 @@ class Tile(QObject):
     @Slot()
     def on_right_click(self) -> None:
         self.right_clicked.emit(self.row, self.col)
+    
+    @Slot()
+    def on_game_over(self) -> None:
+        self.reveal()
 
     def set_flag(self, flag: bool) -> None:
         self._is_flag = flag
