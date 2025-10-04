@@ -61,7 +61,7 @@ class TimeTracker(QFrame):
         self._set_layout_properties()        
     
     def _set_counter_properties(self) -> None:
-        self._counter.setDigitCount(1)
+        self._counter.setDigitCount(4)
         self._counter.display('0')
         self._counter.setSegmentStyle(QLCDNumber.SegmentStyle.Flat)
         self._counter.setStyleSheet("QLCDNumber { background-color: black; color: red; }")
@@ -76,6 +76,4 @@ class TimeTracker(QFrame):
     
     def update_counter(self, value: int) -> None:
         value_str = str(value)
-        digits = min(len(value_str), 4)
-        self._counter.setDigitCount(digits)
         self._counter.display(value_str if len(value_str) <= 4 else '9999')

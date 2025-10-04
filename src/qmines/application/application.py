@@ -38,15 +38,12 @@ class Application(QObject):
         self.pause_availability_state_changed.emit(PauseAvailability.DISABLED)
         self._game_over = True
         result = GameOverMessage(reason).exec()
-        match result:
-            case GameOverMessage.StandardButton.Ok:
-                print("OK")
-            case GameOverMessage.StandardButton.Cancel:
-                print("Bruh")
+        if result == GameOverMessage.StandardButton.Ok:
+            self.on_new_game()
     
     @Slot(bool)
     def on_game_paused(self, paused: bool) -> None:
-        if self._mainwindow is not None:
+        if self._mainwindow is not None and not self._game_over:
             self._paused = paused
             self._mainwindow.set_paused(paused)
             self.time_tracking_state_change.emit(TimerStateChange.STOP if paused else TimerStateChange.START)
