@@ -8,7 +8,7 @@ from qmines.controls.actions import NewGameAction, PauseAction, ResetGameAction
 from qmines.controls.counters import MineCounter, TimeTracker
 
 
-class ToolbarView(QToolBar):
+class Toolbar(QToolBar):
     HEIGHT: Final[int] = 40
     ICON_SIZE: Final[int] = 20
 
@@ -21,26 +21,6 @@ class ToolbarView(QToolBar):
         self._time_tracker = time_tracker
         self._set_toolbar_properties()
         self._add_buttons()
-
-    @property
-    def time_tracker(self) -> TimeTracker:
-        return self._time_tracker
-
-    @property
-    def mine_counter(self) -> MineCounter:
-        return self._mine_counter
-
-    @property
-    def pause_action(self) -> PauseAction:
-        return self._pause_action
-    
-    @property
-    def reset_action(self) -> ResetGameAction:
-        return self._reset_action
-
-    @property
-    def new_game_action(self) -> NewGameAction:
-        return self._new_game_action
 
     def _set_toolbar_properties(self) -> None:
         self.toggleViewAction().setEnabled(False)

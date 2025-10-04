@@ -1,37 +1,19 @@
+from PySide6.QtGui import QAction
 from PySide6.QtWidgets import QMenuBar
-
-from qmines.controls.actions import AboutAction, NewGameAction, PauseAction, QuitAction, ResetGameAction
 
 
 class MenuBar(QMenuBar):
 
-    def __init__(self) -> None:
+    def __init__(self, new_game: QAction, reset_game: QAction, pause: QAction, quit: QAction, about: QAction) -> None:
         super().__init__()
-        self._new_game = NewGameAction()
-        self._reset = ResetGameAction()
-        self._pause = PauseAction()
-        self._quit = QuitAction()
-        self._about = AboutAction()
-    
-    @property
-    def new_game(self) -> NewGameAction:
-        return self._new_game
-    
-    @property
-    def reset_game(self) -> ResetGameAction:
-        return self._reset
-    
-    @property
-    def pause_game(self) -> PauseAction:
-        return self._pause
-    
-    @property
-    def quit(self) -> QuitAction:
-        return self._quit
-    
-    @property
-    def about(self) -> AboutAction:
-        return self._about
+        self._new_game = new_game
+        self._reset = reset_game
+        self._pause = pause
+        self._quit = quit
+        self._about = about
+        self._set_game_menu()
+        self._set_score_menu()
+        self._set_help_menu()
     
     def _set_game_menu(self) -> None:
         game_menu = self.addMenu('Game')
