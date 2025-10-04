@@ -2,3 +2,18 @@
 * For big boards, performing clicks is slow, graphics sometimes don't get displayed, and there was even a recursion depth issue.
     Investigate how current algo differs from the old one and find the problem.
 * Refactor where ugly or inconsistent (make enums internal, ...)
+* Custom game dialog initial values and preferred mine density don't work. Maybe for the dialog we shouldn't use MVC?
+* The proximity iteration and mine/board generation should be tested, seems iffy. Also maybe only guarantee that the first click won't be mine
+    instead of it and all its neighbours.uv
+
+---------------------
+
+Try the following:
+    * Tile revealing will happen iteratively, there is a method that sets up a stack, puts the first tile into it
+        then starts a while loop on the truthiness of the stack. Each iteration, a tile is popped from the stack, evaluated
+        a signal is sent to the tile to change it, and all eligible neighbours (non-revealed, non-flag) get pushed on the stack.
+    * A set is also created before hand, and any visited tile is added to the set, and visited tiles are not pushed to the stack.
+    * If a mine is encountered, the entire iteration ends and a lose condition is sent.
+    * Communication should generally be handled via signals unless there is good reason not to. For example instead of iterating
+        over all tiles, and revealing them (when game over), tiles (probably the controllers) should be connected to a game over signal.
+    * Clicking a revealed tile should use the same mechanism as clicking an isolated one.

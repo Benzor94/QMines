@@ -1,74 +1,79 @@
-from collections.abc import Callable
-from enum import Enum
+from typing import Final
 
+from PySide6.QtCore import Slot
 from PySide6.QtWidgets import QFrame, QGridLayout, QLabel, QPushButton, QSpinBox
 
-
-class BoardLengthSelector(QSpinBox):
-
-    class Dimension(Enum):
-        HEIGHT = 0
-        WIDTH = 1
-    
-    def __init__(self, dimension: Dimension, min_length: int, max_length: int, initial_value: int) -> None:
-        super().__init__()
-        self._dimension = dimension
-        self._label = self._create_label()
-        self.setMinimum(min_length)
-        self.setMaximum(max_length)
-        self.setValue(initial_value)
-    
-    @property
-    def label(self) -> QLabel:
-        return self._label
- 
-    def _create_label(self) -> QLabel:
-        match self._dimension:
-            case self.Dimension.HEIGHT:
-                text = 'Rows: '
-            case self.Dimension.WIDTH:
-                text = 'Columns: '
-        return QLabel(text)
-
-class MineCountSelector(QSpinBox):
-
-    def __init__(self, min_count: int, max_count: Callable[[int], int], initial_value: int, initial_board_size: int, preferred_mine_density: float) -> None:
-        super().__init__()
-        self._label = QLabel('Mines: ')
-        self._max_count_fcn = max_count
-        self._preferred_mine_density = preferred_mine_density
-        self.setMinimum(min_count)
-        self.setMaximum(max_count(initial_board_size))
-        self.setValue(initial_value)
-    
-    @property
-    def label(self) -> QLabel:
-        return self._label
-    
-    def update_max(self, current_board_size: int) -> None:
-        self.setMaximum(self._max_count_fcn(current_board_size))
-        self.setValue(round(current_board_size * self._preferred_mine_density))
+from qmines.config import Config
 
 
 class CustomModeSelector(QFrame):
 
-    def __init__(self, height_selector: BoardLengthSelector, width_selector: BoardLengthSelector, mine_selector: MineCountSelector, start_button: QPushButton) -> None:
+    MIN_BOARD_LENGTH: Final[int] = 8
+    MAX_BOARD_LENGTH: Final[int] = 30
+    MIN_MINE_NUMBER: Final[int] = 10
+    MIN_EMPTY_TILE_NUMBER: Final[int] = 10
+    PREFERRED_MINE_DENSITY: Final[float] = 0.156
+
+    def __init__(self, initial_config: Config) -> None:
         super().__init__()
-        self._height_selector = height_selector
-        self._width_selector = width_selector
-        self._mine_selector = mine_selector
-        self._start_button = start_button
+        self._initial_config = initial_config
+        self._height_selector = QSpinBox()
+        self._width_selector = QSpinBox()
+        self._mine_selector = QSpinBox()
+        self._start_button = QPushButton('Start custom game')
         self._layout = QGridLayout()
+        self._set_selector_properties()
         self._set_layout_properties()
         self.setVisible(False)
     
+    @property
+    def height_selector(self) -> QSpinBox:
+        return self._height_selector
+    
+    @property
+    def width_selector(self) -> QSpinBox:
+        return self._width_selector
+    
+    @property
+    def mine_selector(self) -> QSpinBox:
+        return self._mine_selector
+    
+    @property
+    def start_button(self) -> QPushButton:
+        return self._start_button
+    
+    @property
+    def current_config(self) -> Config:
+        return Config(self.height_selector.value(), self.width_selector.value(), self.mine_selector.value())
+    
+    @Slot()
+    def on_board_length_value_change(self) -> None:
+        self.mine_selector.setMaximum(self._current_max_mines())
+        self.mine_selector.setValue(round(self.height_selector.value() * self.width_selector.value() * self.PREFERRED_MINE_DENSITY))
+    
+    def _set_selector_properties(self) -> None:
+        self.height_selector.setMinimum(self.MIN_BOARD_LENGTH)
+        self.height_selector.setMaximum(self.MAX_BOARD_LENGTH)
+        self.height_selector.setValue(self._initial_config.number_of_rows)
+        self.width_selector.setMinimum(self.MIN_BOARD_LENGTH)
+        self.width_selector.setMaximum(self.MAX_BOARD_LENGTH)
+        self.width_selector.setValue(self._initial_config.number_of_columns)
+        self.mine_selector.setMinimum(self.MIN_MINE_NUMBER)
+        self.mine_selector.setMaximum(self._current_max_mines())
+        
+        self.height_selector.valueChanged.connect(self.on_board_length_value_change)
+        self.width_selector.valueChanged.connect(self.on_board_length_value_change)
+    
     def _set_layout_properties(self) -> None:
-        self._layout.addWidget(self._height_selector.label, 0, 0)
-        self._layout.addWidget(self._height_selector, 0, 1)
-        self._layout.addWidget(self._width_selector.label, 1, 0)
-        self._layout.addWidget(self._width_selector, 1, 1)
-        self._layout.addWidget(self._mine_selector.label, 2, 0)
-        self._layout.addWidget(self._mine_selector, 2, 1)
-        self._layout.addWidget(self._start_button, 3, 1, 1, 2)
+        self._layout.addWidget(QLabel('Rows: '), 0, 0)
+        self._layout.addWidget(self.height_selector, 0, 1)
+        self._layout.addWidget(QLabel('Columns: '), 1, 0)
+        self._layout.addWidget(self.width_selector, 1, 1)
+        self._layout.addWidget(QLabel('Mines: '), 2, 0)
+        self._layout.addWidget(self.mine_selector, 2, 1)
+        self._layout.addWidget(self.start_button, 3, 1, 1, 2)
         self.setLayout(self._layout)
+    
+    def _current_max_mines(self) -> int:
+        return self._height_selector.value() * self._width_selector.value() - self.MIN_EMPTY_TILE_NUMBER
     
