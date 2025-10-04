@@ -11,7 +11,6 @@ class MainWindow(QMainWindow):
         self.setWindowTitle('QMines')
         self._set_size_properties()
         self._set_layout_properties()
-        # self._set_minimum_size()
         self.show()
 
     def set_paused(self, paused: bool) -> None:
@@ -31,8 +30,3 @@ class MainWindow(QMainWindow):
         self._layout.addWidget(self._pause_view)
         self.setCentralWidget(frame)
 
-    def _set_minimum_size(self) -> None:
-        self.adjustSize()
-        toolbar_width = self._toolbar.sizeHint().width()
-        frame_margin = self.geometry().width() - self.contentsRect().width()
-        self.setMinimumWidth(toolbar_width + frame_margin)
