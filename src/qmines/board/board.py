@@ -99,7 +99,7 @@ class Board(QObject):
             self._register_revealed_tile()
     
     def _initialize_board(self, row: int, col: int) -> None:
-        tile_pool = [tile for tile in self if tile != self[row, col]]
+        tile_pool = [tile for tile in self if not tile.is_neighbour(self[row, col])]
         mines = sample(tile_pool, self._n_mines)
         for tile in mines:
             tile.is_mine = True

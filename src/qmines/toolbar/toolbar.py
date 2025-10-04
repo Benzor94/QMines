@@ -3,7 +3,7 @@ from threading import Lock
 from PySide6.QtCore import QObject, QTimer, Signal, Slot
 
 from qmines.config import Config
-from qmines.enums import FlagCountChange, PauseAvailability, TimerStateChange
+from qmines.enums import FlagCountChange, GameOverReason, PauseAvailability, TimerStateChange
 from qmines.toolbar.actions import NewGameAction, PauseAction
 from qmines.toolbar.counters import MineCounter, TimeTracker
 from qmines.toolbar.toolbar_view import ToolbarView
@@ -59,6 +59,11 @@ class Toolbar(QObject):
     def on_timer_period(self) -> None:
         self._seconds_elapsed += 1
         self.view.time_tracker.update_counter(self._seconds_elapsed)
+    
+    @Slot(GameOverReason)
+    def on_game_over(self, reason: GameOverReason) -> None:
+        if reason == GameOverReason.WIN:
+            self.view.mine_counter.update_counter(0)
 
     def _create_timer(self) -> QTimer:
         timer = QTimer()

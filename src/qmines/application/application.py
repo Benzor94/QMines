@@ -14,6 +14,7 @@ from qmines.toolbar.toolbar import Toolbar
 class Application(QObject):
     time_tracking_state_change = Signal(TimerStateChange)
     pause_availability_state_changed = Signal(PauseAvailability)
+    game_over = Signal(GameOverReason)  # Currently only affects the mine counter
 
     def __init__(self) -> None:
         super().__init__()
@@ -36,6 +37,7 @@ class Application(QObject):
     def on_game_over(self, reason: GameOverReason) -> None:
         self.time_tracking_state_change.emit(TimerStateChange.STOP)
         self.pause_availability_state_changed.emit(PauseAvailability.DISABLED)
+        self.game_over.emit(reason)
         self._game_over = True
         result = GameOverMessage(reason).exec()
         if result == GameOverMessage.StandardButton.Ok:
@@ -78,3 +80,4 @@ class Application(QObject):
         self._toolbar.game_paused.connect(self.on_game_paused)
         self.pause_availability_state_changed.connect(self._toolbar.on_pause_availability_change)
         self._toolbar.new_game.connect(self.on_new_game)
+        self.game_over.connect(self._toolbar.on_game_over)

@@ -99,4 +99,7 @@ class Tile(QObject):
         else:
             self.view.set_display_state(self.proximity_number)
             self.view.set_pressed_state(PressedState.HIDDEN if self.proximity_number == 0 else PressedState.FLAT)
+    
+    def is_neighbour(self, other: 'Tile') -> bool:
+        return abs(self.row - other.row) <= 1 and abs(self.col - other.col) <= 1
         
