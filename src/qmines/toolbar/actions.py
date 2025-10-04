@@ -12,8 +12,17 @@ class NewGameAction(QAction):
     def __init__(self) -> None:
         super().__init__()
         self.setIcon(get_qicon_from_path(self.ICON))
+        self.setText('New')
         self.setToolTip('Start a new game')
 
+class ResetGameAction(QAction):
+    ICON = get_resources_dir() / 'reset16.png'
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.setIcon(get_qicon_from_path(self.ICON))
+        self.setText('Reset')
+        self.setToolTip('Start over the game with the same settings')
 
 class PauseAction(QAction):
     PAUSE_ICON = get_resources_dir() / 'pause16.png'
@@ -28,6 +37,7 @@ class PauseAction(QAction):
         self._pause_icon = get_qicon_from_path(self.PAUSE_ICON)
         self._play_icon = get_qicon_from_path(self.PLAY_ICON)
         self.setIcon(self._pause_icon)
+        self.setText('Pause')
         self.setToolTip('Pause/resume the game')
         self.setCheckable(True)
         self.setEnabled(False)
@@ -36,6 +46,7 @@ class PauseAction(QAction):
     @Slot(bool)
     def on_checked(self, checked: bool) -> None:
         self.setIcon(self._play_icon if checked else self._pause_icon)
+        self.setText('Resume' if checked else 'Pause')
 
     def set_icon_state(self, state: State) -> None:
         cls = self.__class__

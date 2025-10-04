@@ -5,7 +5,7 @@ from PySide6.QtCore import QObject, QTimer, Signal, Slot
 
 from qmines.common import FlagCountChange, GameOverReason
 from qmines.config import Config
-from qmines.toolbar.actions import NewGameAction, PauseAction
+from qmines.toolbar.actions import NewGameAction, PauseAction, ResetGameAction
 from qmines.toolbar.counters import MineCounter, TimeTracker
 from qmines.toolbar.toolbar_view import ToolbarView
 
@@ -21,16 +21,18 @@ class Toolbar(QObject):
 
     game_paused = Signal(bool)
     new_game = Signal()
+    start_over_game = Signal()
 
     def __init__(self, config: Config) -> None:
         super().__init__()
         self._timer = self._create_timer()
-        self._view = ToolbarView(NewGameAction(), PauseAction(), MineCounter(config.number_of_mines), TimeTracker())
+        self._view = ToolbarView(NewGameAction(), ResetGameAction(), PauseAction(), MineCounter(config.number_of_mines), TimeTracker())
         self._lock = Lock()
         self._seconds_elapsed = 0
         self._number_of_remaining_mines = config.number_of_mines
         self.view.pause_action.toggled.connect(self.game_paused.emit)
         self.view.new_game_action.triggered.connect(self.new_game.emit)
+        self.view.reset_action.triggered.connect(self.start_over_game.emit)
 
     @property
     def view(self) -> ToolbarView:

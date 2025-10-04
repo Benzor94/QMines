@@ -4,6 +4,7 @@ from PySide6.QtWidgets import QDialog
 from qmines.application.game_over_message import GameOverMessage
 from qmines.application.mainwindow import MainWindow
 from qmines.application.pause_view import PauseView
+from qmines.application.start_over_message import StartOverMessage
 from qmines.board.board import Board
 from qmines.common import GameOverReason
 from qmines.config import Config, read_config_from_file, write_config_to_file
@@ -63,6 +64,18 @@ class Application(QObject):
             self.on_game_paused(False)
         if result == QDialog.DialogCode.Accepted:
             self._set_up_game(config)
+    
+    @Slot()
+    def on_game_reset(self) -> None:
+        assert self._mainwindow is not None
+        is_already_paused = self._paused
+        if not is_already_paused:
+            self.on_game_paused(True)
+        result = StartOverMessage(self._game_over).exec()
+        if not is_already_paused:
+            self.on_game_paused(False)
+        if result == StartOverMessage.StandardButton.Ok:
+            self._set_up_game(self._config)
 
     def _set_up_game(self, config: Config) -> None:
         write_config_to_file(config)
@@ -81,3 +94,4 @@ class Application(QObject):
         self.pause_availability_state_changed.connect(self._toolbar.on_pause_availability_change)
         self._toolbar.new_game.connect(self.on_new_game)
         self.game_over.connect(self._toolbar.on_game_over)
+        self._toolbar.start_over_game.connect(self.on_game_reset)
