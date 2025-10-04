@@ -4,8 +4,8 @@ from PySide6.QtCore import QSize
 from PySide6.QtGui import Qt
 from PySide6.QtWidgets import QSizePolicy, QToolBar, QWidget
 
-from qmines.toolbar.actions import NewGameAction, PauseAction, ResetGameAction
-from qmines.toolbar.counters import MineCounter, TimeTracker
+from qmines.controls.actions import NewGameAction, PauseAction, ResetGameAction
+from qmines.controls.counters import MineCounter, TimeTracker
 
 
 class ToolbarView(QToolBar):

@@ -3,10 +3,8 @@ from PySide6.QtWidgets import QMessageBox
 
 class StartOverMessage(QMessageBox):
 
-    def __init__(self, is_game_over: bool) -> None:
+    def __init__(self) -> None:
         super().__init__()
-        if is_game_over:
-            self.accept()
         self._set_up_text()
         self._set_up_buttons()
         self._set_up_icons()

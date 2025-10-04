@@ -8,8 +8,8 @@ from qmines.application.start_over_message import StartOverMessage
 from qmines.board.board import Board
 from qmines.common import GameOverReason
 from qmines.config import Config, read_config_from_file, write_config_to_file
+from qmines.controls.toolbar import Toolbar
 from qmines.new_game_selector.new_game_dialog import NewGameDialog
-from qmines.toolbar.toolbar import Toolbar
 
 
 class Application(QObject):
@@ -20,6 +20,7 @@ class Application(QObject):
     def __init__(self) -> None:
         super().__init__()
         self._config = read_config_from_file()
+        self._game_started = False
         self._game_over = False
         self._paused = False
         self._board = None
@@ -31,6 +32,7 @@ class Application(QObject):
 
     @Slot()
     def on_game_start(self) -> None:
+        self._game_started = True
         self.time_tracking_state_change.emit(Toolbar.TimerStateChange.START)
         self.pause_availability_state_changed.emit(Toolbar.PauseAvailability.ENABLED)
 
@@ -68,14 +70,17 @@ class Application(QObject):
     @Slot()
     def on_game_reset(self) -> None:
         assert self._mainwindow is not None
-        is_already_paused = self._paused
-        if not is_already_paused:
-            self.on_game_paused(True)
-        result = StartOverMessage(self._game_over).exec()
-        if not is_already_paused:
-            self.on_game_paused(False)
-        if result == StartOverMessage.StandardButton.Ok:
+        if self._game_over or not self._game_started:
             self._set_up_game(self._config)
+        else:
+            is_already_paused = self._paused
+            if not is_already_paused:
+                self.on_game_paused(True)
+            result = StartOverMessage().exec()
+            if not is_already_paused:
+                self.on_game_paused(False)
+            if result == StartOverMessage.StandardButton.Ok:
+                self._set_up_game(self._config)
 
     def _set_up_game(self, config: Config) -> None:
         write_config_to_file(config)
