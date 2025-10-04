@@ -1,5 +1,3 @@
 Since now we can reset the game, the game over dialog is a bit weird since it does not offer both options.
 So instead, it should be a simple message without choice and only if the game is lost.
 If the game is won, we should be using a dialog to display the score.
-
-Dialog handling logic in Application should be abstracted, there is too much repetition here.
