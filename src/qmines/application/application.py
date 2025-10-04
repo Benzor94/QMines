@@ -1,3 +1,7 @@
+from collections.abc import Callable
+from functools import wraps
+from typing import Concatenate
+
 from PySide6.QtCore import QObject, Signal, Slot
 from PySide6.QtWidgets import QApplication, QDialog
 
@@ -17,6 +21,23 @@ class Application(QObject):
     time_tracking_state_change = Signal(ControlManager.TimerStateChange)
     pause_availability_state_changed = Signal(ControlManager.PauseAvailability)
     game_over = Signal(GameOverReason)  # Currently only affects the mine counter
+
+    @staticmethod
+    def dialog_pause_guard[**P](meth: Callable[Concatenate['Application', P], None]) -> Callable[Concatenate['Application', P], None]:
+
+        @wraps(meth)
+        def inner(self: 'Application', *args: P.args, **kwargs: P.kwargs) -> None:
+            if self._game_over or not self._game_started:
+                is_currently_paused = True
+            else:
+                is_currently_paused = self._paused
+            if not is_currently_paused:
+                self.on_game_paused(True)
+            meth(self, *args, **kwargs)
+            if not is_currently_paused:
+                self.on_game_paused(False)
+            return
+        return inner
 
     def __init__(self) -> None:
         super().__init__()
@@ -39,11 +60,12 @@ class Application(QObject):
 
     @Slot(GameOverReason)
     def on_game_over(self, reason: GameOverReason) -> None:
+        assert self._mainwindow is not None
         self.time_tracking_state_change.emit(ControlManager.TimerStateChange.STOP)
         self.pause_availability_state_changed.emit(ControlManager.PauseAvailability.DISABLED)
         self.game_over.emit(reason)
         self._game_over = True
-        result = GameOverMessage(reason).exec()
+        result = GameOverMessage(reason, self._mainwindow).exec()
         if result == GameOverMessage.StandardButton.Ok:
             self.on_new_game()
 
@@ -55,30 +77,23 @@ class Application(QObject):
             self.time_tracking_state_change.emit(ControlManager.TimerStateChange.STOP if paused else ControlManager.TimerStateChange.START)
 
     @Slot()
+    @dialog_pause_guard
     def on_new_game(self) -> None:
         assert self._mainwindow is not None
-        is_already_paused = self._paused
-        if not is_already_paused:
-            self.on_game_paused(True)
         dialog = NewGameDialog(self._mainwindow, self._config)
         result = QDialog.DialogCode(dialog.exec())
         config = dialog.selected_config
-        if not is_already_paused:
-            self.on_game_paused(False)
         if result == QDialog.DialogCode.Accepted:
             self._set_up_game(config)
 
     @Slot()
+    @dialog_pause_guard
     def on_game_reset(self) -> None:
+        assert self._mainwindow is not None
         if self._game_over or not self._game_started:
             self._set_up_game(self._config)
         else:
-            is_already_paused = self._paused
-            if not is_already_paused:
-                self.on_game_paused(True)
-            result = StartOverMessage().exec()
-            if not is_already_paused:
-                self.on_game_paused(False)
+            result = StartOverMessage(self._mainwindow).exec()
             if result == StartOverMessage.StandardButton.Ok:
                 self._set_up_game(self._config)
     
@@ -89,13 +104,10 @@ class Application(QObject):
             app.quit()
     
     @Slot()
+    @dialog_pause_guard
     def on_about_message_invoked(self) -> None:
-        is_already_paused = self._paused
-        if not is_already_paused:
-            self.on_game_paused(True)
-        AboutMessage().exec()
-        if not is_already_paused:
-            self.on_game_paused(False)
+        assert self._mainwindow is not None
+        AboutMessage(self._mainwindow).exec()
 
     def _set_up_game(self, config: Config) -> None:
         write_config_to_file(config)
@@ -119,3 +131,7 @@ class Application(QObject):
         self._control_manager.start_over_game.connect(self.on_game_reset)
         self._control_manager.game_quit.connect(self.on_game_quit)
         self._control_manager.about_dialog_invoked.connect(self.on_about_message_invoked)
+        # Some combination of pause and dialog can cause the timer to go off at start, this fixes it
+        self.time_tracking_state_change.emit(ControlManager.TimerStateChange.STOP)
+    
+

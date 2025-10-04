@@ -1,10 +1,10 @@
-from PySide6.QtWidgets import QMessageBox
+from PySide6.QtWidgets import QMessageBox, QWidget
 
 
 class StartOverMessage(QMessageBox):
 
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, parent: QWidget) -> None:
+        super().__init__(parent)
         self._set_up_text()
         self._set_up_buttons()
         self._set_up_icons()

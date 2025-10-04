@@ -1,11 +1,11 @@
-from PySide6.QtWidgets import QMessageBox
+from PySide6.QtWidgets import QMessageBox, QWidget
 
 from qmines.common import GameOverReason
 
 
 class GameOverMessage(QMessageBox):
-    def __init__(self, reason: GameOverReason) -> None:
-        super().__init__()
+    def __init__(self, reason: GameOverReason, parent: QWidget) -> None:
+        super().__init__(parent)
         self._reason = reason
         self._set_up_text()
         self._set_up_buttons()
