@@ -4,7 +4,7 @@ Classic minesweeper game in Qt/Python.
 
 # Attribution
 
-Icons `clock16.png`, `pause16.png`, `play16.png` and `plus16.png` are part of the Fugue icon set by [Yusuke Kamiyamane](https://p.yusukekamiyamane.com/) available under the
+Icons `clock16.png`, `cross16.png`, `info16.png`, `pause16.png`, `play16.png`, `plus16.png` and `reset16.png` are part of the Fugue icon set by [Yusuke Kamiyamane](https://p.yusukekamiyamane.com/) available under the
 Creative Commons Attribution 3.0 License.
 
 The flag icon `flag256.png` is created by [Alfredo Hernandez](https://www.flaticon.com/free-icons/red-flag)
