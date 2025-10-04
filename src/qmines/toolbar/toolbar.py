@@ -1,15 +1,24 @@
+from enum import Enum
 from threading import Lock
 
 from PySide6.QtCore import QObject, QTimer, Signal, Slot
 
 from qmines.config import Config
-from qmines.enums import FlagCountChange, GameOverReason, PauseAvailability, TimerStateChange
+from qmines.enums import FlagCountChange, GameOverReason
 from qmines.toolbar.actions import NewGameAction, PauseAction
 from qmines.toolbar.counters import MineCounter, TimeTracker
 from qmines.toolbar.toolbar_view import ToolbarView
 
 
 class Toolbar(QObject):
+
+    class TimerStateChange(Enum):
+        START = 0
+        STOP = 1
+
+    class PauseAvailability(Enum):
+        ENABLED = 0
+        DISABLED = 1
 
     game_paused = Signal(bool)
     new_game = Signal()
@@ -31,9 +40,9 @@ class Toolbar(QObject):
     @Slot(TimerStateChange)
     def on_time_tracking_state_change(self, state_change: TimerStateChange) -> None:
         match state_change:
-            case TimerStateChange.START:
+            case self.TimerStateChange.START:
                 self._timer.start()
-            case TimerStateChange.STOP:
+            case self.TimerStateChange.STOP:
                 self._timer.stop()
     
     @Slot(FlagCountChange)
@@ -50,9 +59,9 @@ class Toolbar(QObject):
     @Slot(PauseAvailability)
     def on_pause_availability_change(self, availability: PauseAvailability) -> None:
         match availability:
-            case PauseAvailability.ENABLED:
+            case self.PauseAvailability.ENABLED:
                 self.view.pause_action.setEnabled(True)
-            case PauseAvailability.DISABLED:
+            case self.PauseAvailability.DISABLED:
                 self.view.pause_action.setEnabled(False)
 
     @Slot()

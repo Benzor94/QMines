@@ -1,3 +1,4 @@
+from enum import Enum
 from pathlib import Path
 from typing import Final, override
 
@@ -5,13 +6,24 @@ from PySide6.QtCore import QSize, Qt, Signal
 from PySide6.QtGui import QIcon, QMouseEvent, QResizeEvent
 from PySide6.QtWidgets import QPushButton, QSizePolicy
 
-from qmines.enums import IconState, PressedState
 from qmines.utilities import get_qicon_from_path, get_resources_dir, set_font_size_based_on_height
 
-type DisplayState = IconState | int
+type DisplayState = TileView.IconState | int
 
 
 class TileView(QPushButton):
+
+    class IconState(Enum):
+        EMPTY = 0
+        FLAG = 1
+        MINE = 2
+        EXPLOSION = 3
+    
+    class PressedState(Enum):
+        RAISED = 0
+        FLAT = 1
+        HIDDEN = 2
+
     MIN_SIZE: Final[int] = 32
 
     MINE_ICON: Final[Path] = get_resources_dir() / 'mine256.png'
@@ -31,15 +43,15 @@ class TileView(QPushButton):
 
     def set_display_state(self, state: DisplayState) -> None:
         match state:
-            case IconState() as icon_state:
+            case self.IconState() as icon_state:
                 match icon_state:
-                    case IconState.EMPTY:
+                    case self.IconState.EMPTY:
                         icon = self._empty_icon
-                    case IconState.FLAG:
+                    case self.IconState.FLAG:
                         icon = self._flag_icon
-                    case IconState.MINE:
+                    case self.IconState.MINE:
                         icon = self._mine_icon
-                    case IconState.EXPLOSION:
+                    case self.IconState.EXPLOSION:
                         icon = self._boom_icon
                 self._set_icon(icon)
             case int() as int_state:
@@ -53,15 +65,15 @@ class TileView(QPushButton):
 
     def set_pressed_state(self, state: PressedState) -> None:
         match state:
-            case PressedState.RAISED:
+            case self.PressedState.RAISED:
                 self.setVisible(True)
                 self.setFlat(False)
                 self.setDown(False)
-            case PressedState.FLAT:
+            case self.PressedState.FLAT:
                 self.setVisible(True)
                 self.setFlat(True)
                 self.setDown(False)
-            case PressedState.HIDDEN:
+            case self.PressedState.HIDDEN:
                 self.setVisible(False)
 
     @override
