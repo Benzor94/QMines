@@ -1,5 +1,4 @@
 from enum import Enum
-from pathlib import Path
 
 from PySide6.QtCore import Slot
 from PySide6.QtGui import QAction
