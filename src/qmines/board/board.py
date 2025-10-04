@@ -6,14 +6,14 @@ from PySide6.QtCore import QObject, Signal, Slot
 
 from qmines.board.board_view import BoardView
 from qmines.config import Config
-from qmines.enums import FlagCountChange, GameOverReason
+from qmines.common import FlagCountChange
 from qmines.tile.tile import Tile
+from qmines.common import GameOverReason
 
 
 class Board(QObject):
     flag_changed = Signal(FlagCountChange)
     game_over = Signal(GameOverReason)
-    trigger_tile = Signal(int, int)
     game_started = Signal()
 
     def __init__(self, config: Config) -> None:
@@ -24,20 +24,17 @@ class Board(QObject):
         self._size = self._n_rows * self._n_cols
         self._initialized = False
         self._game_over = False
-        self._revealed_tiles = 0
         self._lock = Lock()
-        self._tiles = [self._create_tile(idx) for idx in range(self._size)]
-        self._view = BoardView(self._n_rows / self._n_cols, {(t.row, t.col): t.view for t in self._tiles})
-        self.trigger_tile.connect(self.on_left_click)
+        self._revealed_tiles = 0
+        self._tiles = {(row, col): self._create_tile(row, col) for row in range(self._n_rows) for col in range(self._n_cols)}
+        self._view = BoardView(self._n_rows / self._n_cols, {coords: self._tiles[coords].view for coords in self._tiles})
+        self.game_over.connect(self.on_game_over)
 
     def __getitem__(self, coordinates: tuple[int, int]) -> Tile:
-        return self._tiles[self._coordinates_to_index(*coordinates)]
+        return self._tiles[coordinates]
 
     def __iter__(self) -> Iterator[Tile]:
-        return iter(self._tiles)
-
-    def __del__(self) -> None:
-        print('Board was deleted.')
+        return iter(self._tiles.values())
 
     @property
     def view(self) -> BoardView:
@@ -48,23 +45,15 @@ class Board(QObject):
         if self._game_over:
             return
         if not self._initialized:
-            self._set_up_board(row, col)
-            self._initialized = True
-            self.trigger_tile.emit(row, col)
-            self.game_started.emit()
-            return
+            self._initialize_board(row, col)
         clicked_tile = self[row, col]
         if clicked_tile.is_flag:
             return
-        if clicked_tile.is_revealed and clicked_tile.proximity_number != 0 and not clicked_tile.is_mine:
-            number_of_nearby_flags = sum(1 for tile in self._proximity_iterator(row, col) if tile.is_flag)
-            if number_of_nearby_flags == clicked_tile.proximity_number:
-                self._cascade_reveal(row, col)
-            return
-        if not clicked_tile.is_revealed:
-            self._reveal_tile(clicked_tile)
-            if clicked_tile.proximity_number == 0:
-                self._cascade_reveal(row, col)
+        if clicked_tile.is_revealed:
+            nearby_flags = sum(1 for t in self._proximity_iterator(row, col) if t.is_flag)
+            if clicked_tile.proximity_number == 0 or nearby_flags != clicked_tile.proximity_number:  # We proceed if revealed, but only if proximity number matches flags
+                return
+        self._cascade_reveal(row, col)
 
     @Slot(int, int)
     def on_right_click(self, row: int, col: int) -> None:
@@ -80,81 +69,67 @@ class Board(QObject):
             tile.set_flag(True)
             self.flag_changed.emit(FlagCountChange.ADDED)
 
-    def _create_tile(self, idx: int) -> Tile:
-        tile = Tile(*self._index_to_coordinates(idx))
-        tile.left_clicked.connect(self.on_left_click)
-        tile.right_clicked.connect(self.on_right_click)
-        return tile
+    @Slot()
+    def on_game_over(self) -> None:
+        self._game_over = True
 
-    def _reveal_tile(self, tile: Tile) -> None:
+    def _cascade_reveal(self, row: int, col: int) -> None:
+        initial_tile = self[row, col]
+        visited_tiles = {initial_tile}
+        stack = [initial_tile]
+
+        while stack:
+            if self._game_over:
+                break
+            current = stack.pop()
+            is_revealed = current.is_revealed
+            self._handle_single_tile_reveal(current)
+            if is_revealed or current.proximity_number == 0:
+                for neighbour in (t for t in self._proximity_iterator(current.row, current.col) if not t.is_flag if not t.is_revealed if t not in visited_tiles):
+                    stack.append(neighbour)
+                    visited_tiles.add(neighbour)
+
+    def _handle_single_tile_reveal(self, tile: Tile) -> None:
         if tile.is_mine:
             tile.exploded = True
-            self._reveal_all_tiles()
-            self._game_over = True
             self.game_over.emit(GameOverReason.LOSS)
-        else:
+        elif not tile.is_revealed:
             tile.reveal()
             self._register_revealed_tile()
 
-    def _reveal_all_tiles(self) -> None:
-        for tile in self:
-            tile.reveal()
+    def _initialize_board(self, row: int, col: int) -> None:
+        tile_pool = [tile for tile in self if not tile.is_neighbour(self[row, col])]
+        mines = sample(tile_pool, self._n_mines)
+        for tile in mines:
+            tile.is_mine = True
+        for tile in (t for t in self if not t.is_mine):
+            tile.proximity_number = sum(1 for t in self._proximity_iterator(tile.row, tile.col) if t.is_mine)
+        self._initialized = True
+        self.game_started.emit()
+        self.on_left_click(row, col)
 
-    def _cascade_reveal(self, row: int, col: int) -> None:
-        for neighbour in (t for t in self._proximity_iterator(row, col) if not t.is_revealed):
-            self.trigger_tile.emit(neighbour.row, neighbour.col)
+    def _create_tile(self, row: int, col: int) -> Tile:
+        tile = Tile(row, col)
+        tile.left_clicked.connect(self.on_left_click)
+        tile.right_clicked.connect(self.on_right_click)
+        self.game_over.connect(tile.on_game_over)
+        return tile
 
     def _register_revealed_tile(self) -> None:
+        if self._game_over:
+            return
         with self._lock:
             self._revealed_tiles += 1
             if self._size - self._revealed_tiles == self._n_mines:
-                self._reveal_all_tiles()
-                self._game_over = True
                 self.game_over.emit(GameOverReason.WIN)
 
-    def _set_up_board(self, first_clicked_row: int, first_clicked_column: int) -> None:
-        non_adjacent_tiles = list(self._proximity_iterator(first_clicked_row, first_clicked_column, on_complement=True))
-        mines = sample(non_adjacent_tiles, self._n_mines)
-        for tile in mines:
-            tile.is_mine = True
-        for tile in self:
-            tile.proximity_number = sum(1 for n in self._proximity_iterator(tile.row, tile.col) if n.is_mine)
+    def _coordinates_on_board(self, row: int, col: int) -> bool:
+        return (0 <= row < self._n_rows) and (0 <= col < self._n_cols)
 
-    def _coordinates_to_index(self, row: int, col: int) -> int:
-        self._coordinates_on_board_check(row, col)
-        return row * self._n_cols + col
-
-    def _index_to_coordinates(self, idx: int) -> tuple[int, int]:
-        self._index_on_board_check(idx)
-        return idx // self._n_cols, idx % self._n_cols
-
-    def _index_on_board_check(self, idx: int) -> None:
-        if 0 <= idx < self._size:
-            return
-        raise IndexError(f'Index {idx} is not on the board, must be between 0 and {self._size - 1}.')
-
-    def _coordinates_on_board_check(self, row: int, col: int) -> None:
-        if self._is_on_board(row, col):
-            return
-        raise IndexError(f'Coordinates ({row}, {col}) are not on the board, which is size {self._n_rows} x {self._n_cols}.')
-
-    def _is_on_board(self, row: int, col: int) -> bool:
-        return 0 <= row < self._n_rows and 0 <= col < self._n_cols
-
-    def _proximity_iterator(self, row: int, col: int, *, on_complement: bool = False) -> Iterator[Tile]:
-        match on_complement:
-            case True:
-                return self._proximity_iterator_inverse(row, col)
-            case False:
-                return self._proximity_iterator_direct(row, col)
-
-    def _proximity_iterator_direct(self, row: int, col: int) -> Iterator[Tile]:
+    def _proximity_iterator(self, row: int, col: int) -> Iterator[Tile]:
+        if not self._coordinates_on_board(row, col):
+            raise ValueError(f'Coordinates ({row}, {col}) are not on the board.')
         for r in (row - 1, row, row + 1):
             for c in (col - 1, col, col + 1):
-                if self._is_on_board(r, c) and not (r == row and c == col):
+                if self._coordinates_on_board(r, c) and not (r == row and c == col):
                     yield self[r, c]
-
-    def _proximity_iterator_inverse(self, row: int, col: int) -> Iterator[Tile]:
-        for r in set(range(self._n_rows)) - {row - 1, row, row + 1}:
-            for c in set(range(self._n_cols)) - {col - 1, col, col + 1}:
-                yield self[r, c]

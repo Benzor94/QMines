@@ -3,7 +3,7 @@ from enum import Enum
 from PySide6.QtCore import Slot
 from PySide6.QtGui import QAction
 
-from qmines.utilities import get_qicon_from_path, get_resources_dir
+from qmines.common import get_qicon_from_path, get_resources_dir
 
 
 class NewGameAction(QAction):

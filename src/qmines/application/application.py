@@ -5,15 +5,16 @@ from qmines.application.game_over_message import GameOverMessage
 from qmines.application.mainwindow import MainWindow
 from qmines.application.pause_view import PauseView
 from qmines.board.board import Board
+from qmines.common import GameOverReason
 from qmines.config import Config, read_config_from_file, write_config_to_file
-from qmines.enums import GameOverReason, PauseAvailability, TimerStateChange
 from qmines.new_game_selector.new_game_dialog import NewGameDialog
 from qmines.toolbar.toolbar import Toolbar
 
 
 class Application(QObject):
-    time_tracking_state_change = Signal(TimerStateChange)
-    pause_availability_state_changed = Signal(PauseAvailability)
+    time_tracking_state_change = Signal(Toolbar.TimerStateChange)
+    pause_availability_state_changed = Signal(Toolbar.PauseAvailability)
+    game_over = Signal(GameOverReason)  # Currently only affects the mine counter
 
     def __init__(self) -> None:
         super().__init__()
@@ -29,25 +30,26 @@ class Application(QObject):
 
     @Slot()
     def on_game_start(self) -> None:
-        self.time_tracking_state_change.emit(TimerStateChange.START)
-        self.pause_availability_state_changed.emit(PauseAvailability.ENABLED)
+        self.time_tracking_state_change.emit(Toolbar.TimerStateChange.START)
+        self.pause_availability_state_changed.emit(Toolbar.PauseAvailability.ENABLED)
 
     @Slot(GameOverReason)
     def on_game_over(self, reason: GameOverReason) -> None:
-        self.time_tracking_state_change.emit(TimerStateChange.STOP)
-        self.pause_availability_state_changed.emit(PauseAvailability.DISABLED)
+        self.time_tracking_state_change.emit(Toolbar.TimerStateChange.STOP)
+        self.pause_availability_state_changed.emit(Toolbar.PauseAvailability.DISABLED)
+        self.game_over.emit(reason)
         self._game_over = True
         result = GameOverMessage(reason).exec()
         if result == GameOverMessage.StandardButton.Ok:
             self.on_new_game()
-    
+
     @Slot(bool)
     def on_game_paused(self, paused: bool) -> None:
         if self._mainwindow is not None and not self._game_over:
             self._paused = paused
             self._mainwindow.set_paused(paused)
-            self.time_tracking_state_change.emit(TimerStateChange.STOP if paused else TimerStateChange.START)
-    
+            self.time_tracking_state_change.emit(Toolbar.TimerStateChange.STOP if paused else Toolbar.TimerStateChange.START)
+
     @Slot()
     def on_new_game(self) -> None:
         assert self._mainwindow is not None
@@ -78,3 +80,4 @@ class Application(QObject):
         self._toolbar.game_paused.connect(self.on_game_paused)
         self.pause_availability_state_changed.connect(self._toolbar.on_pause_availability_change)
         self._toolbar.new_game.connect(self.on_new_game)
+        self.game_over.connect(self._toolbar.on_game_over)

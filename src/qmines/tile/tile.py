@@ -1,7 +1,6 @@
 
 from PySide6.QtCore import QObject, Signal, Slot
 
-from qmines.enums import IconState, PressedState
 from qmines.tile.tile_view import TileView
 
 
@@ -76,23 +75,30 @@ class Tile(QObject):
     @Slot()
     def on_right_click(self) -> None:
         self.right_clicked.emit(self.row, self.col)
+    
+    @Slot()
+    def on_game_over(self) -> None:
+        self.reveal()
 
     def set_flag(self, flag: bool) -> None:
         self._is_flag = flag
         if flag:
-            self.view.set_display_state(IconState.FLAG)
+            self.view.set_display_state(TileView.IconState.FLAG)
         else:
-            self.view.set_display_state(IconState.EMPTY)
+            self.view.set_display_state(TileView.IconState.EMPTY)
 
     def reveal(self) -> None:
         self._is_revealed = True
         if self.exploded:
-            self.view.set_display_state(IconState.EXPLOSION)
-            self.view.set_pressed_state(PressedState.FLAT)
+            self.view.set_display_state(TileView.IconState.EXPLOSION)
+            self.view.set_pressed_state(TileView.PressedState.FLAT)
         elif self.is_mine:
-            self.view.set_display_state(IconState.MINE)
-            self.view.set_pressed_state(PressedState.FLAT)
+            self.view.set_display_state(TileView.IconState.MINE)
+            self.view.set_pressed_state(TileView.PressedState.FLAT)
         else:
             self.view.set_display_state(self.proximity_number)
-            self.view.set_pressed_state(PressedState.HIDDEN if self.proximity_number == 0 else PressedState.FLAT)
+            self.view.set_pressed_state(TileView.PressedState.HIDDEN if self.proximity_number == 0 else TileView.PressedState.FLAT)
+    
+    def is_neighbour(self, other: 'Tile') -> bool:
+        return abs(self.row - other.row) <= 1 and abs(self.col - other.col) <= 1
         
