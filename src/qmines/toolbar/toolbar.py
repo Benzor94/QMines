@@ -3,12 +3,11 @@ from threading import Lock
 
 from PySide6.QtCore import QObject, QTimer, Signal, Slot
 
+from qmines.common import FlagCountChange, GameOverReason
 from qmines.config import Config
-from qmines.common import FlagCountChange
 from qmines.toolbar.actions import NewGameAction, PauseAction
 from qmines.toolbar.counters import MineCounter, TimeTracker
 from qmines.toolbar.toolbar_view import ToolbarView
-from qmines.common import GameOverReason
 
 
 class Toolbar(QObject):

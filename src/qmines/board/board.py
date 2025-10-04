@@ -5,10 +5,9 @@ from threading import Lock
 from PySide6.QtCore import QObject, Signal, Slot
 
 from qmines.board.board_view import BoardView
+from qmines.common import FlagCountChange, GameOverReason
 from qmines.config import Config
-from qmines.common import FlagCountChange
 from qmines.tile.tile import Tile
-from qmines.common import GameOverReason
 
 
 class Board(QObject):

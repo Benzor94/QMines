@@ -1,4 +1,3 @@
-
 from PySide6.QtCore import QObject, Signal, Slot
 
 from qmines.tile.tile_view import TileView
@@ -75,7 +74,7 @@ class Tile(QObject):
     @Slot()
     def on_right_click(self) -> None:
         self.right_clicked.emit(self.row, self.col)
-    
+
     @Slot()
     def on_game_over(self) -> None:
         self.reveal()
@@ -98,7 +97,6 @@ class Tile(QObject):
         else:
             self.view.set_display_state(self.proximity_number)
             self.view.set_pressed_state(TileView.PressedState.HIDDEN if self.proximity_number == 0 else TileView.PressedState.FLAT)
-    
+
     def is_neighbour(self, other: 'Tile') -> bool:
         return abs(self.row - other.row) <= 1 and abs(self.col - other.col) <= 1
-        

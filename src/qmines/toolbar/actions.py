@@ -7,13 +7,13 @@ from qmines.common import get_qicon_from_path, get_resources_dir
 
 
 class NewGameAction(QAction):
-
     ICON = get_resources_dir() / 'plus16.png'
 
     def __init__(self) -> None:
         super().__init__()
         self.setIcon(get_qicon_from_path(self.ICON))
         self.setToolTip('Start a new game')
+
 
 class PauseAction(QAction):
     PAUSE_ICON = get_resources_dir() / 'pause16.png'
@@ -32,11 +32,11 @@ class PauseAction(QAction):
         self.setCheckable(True)
         self.setEnabled(False)
         self.toggled.connect(self.on_checked)
-    
+
     @Slot(bool)
     def on_checked(self, checked: bool) -> None:
         self.setIcon(self._play_icon if checked else self._pause_icon)
-    
+
     def set_icon_state(self, state: State) -> None:
         cls = self.__class__
         match state:

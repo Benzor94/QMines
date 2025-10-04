@@ -12,13 +12,12 @@ type DisplayState = TileView.IconState | int
 
 
 class TileView(QPushButton):
-
     class IconState(Enum):
         EMPTY = 0
         FLAG = 1
         MINE = 2
         EXPLOSION = 3
-    
+
     class PressedState(Enum):
         RAISED = 0
         FLAT = 1
@@ -111,7 +110,7 @@ class TileView(QPushButton):
 
     def _adjust_icon_size(self, height: int) -> None:
         self.setIconSize(QSize(height - 2, height - 2)) if height > 2 else self.setIconSize(QSize(height, height))
-    
+
     def _set_font_size_based_on_height(self, height: int) -> None:
         new_size = height // 2
         current_font = self.font()

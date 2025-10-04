@@ -6,7 +6,6 @@ from qmines.new_game_selector.custom_mode_selector import CustomModeSelector
 
 
 class NewGameDialog(QDialog):
-
     def __init__(self, parent: QWidget, config: Config) -> None:
         super().__init__(parent)
         self.setWindowTitle('Set Up New Game')
@@ -19,7 +18,7 @@ class NewGameDialog(QDialog):
         self._set_layout_properties()
         self._set_up_connections()
         self._selected_config = config
-    
+
     @property
     def selected_config(self) -> Config:
         return self._selected_config
@@ -36,7 +35,7 @@ class NewGameDialog(QDialog):
         dialog_layout.addWidget(self._buttonbox)
         dialog_layout.setSizeConstraint(QLayout.SizeConstraint.SetFixedSize)
         self.setLayout(dialog_layout)
-    
+
     def _set_up_connections(self) -> None:
         self._custom_mode_button.toggled.connect(self._custom_mode_selector.setVisible)
         self._easy_mode_button.clicked.connect(lambda: self._on_mode_selected(EASY_CONFIG))
@@ -44,8 +43,7 @@ class NewGameDialog(QDialog):
         self._hard_mode_button.clicked.connect(lambda: self._on_mode_selected(HARD_CONFIG))
         self._custom_mode_selector.start_button.clicked.connect(lambda: self._on_mode_selected(self._custom_mode_selector.current_config))
         self._buttonbox.rejected.connect(self.reject)
-    
+
     def _on_mode_selected(self, config: Config) -> None:
         self._selected_config = config
         self.accept()
-
