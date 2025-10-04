@@ -24,6 +24,7 @@ class TileView(QPushButton):
         HIDDEN = 2
 
     MIN_SIZE: Final[int] = 32
+    ICON_SIZE_FACTOR: Final[float] = 0.8
 
     MINE_ICON: Final[Path] = get_resources_dir() / 'mine256.png'
     FLAG_ICON: Final[Path] = get_resources_dir() / 'flag256.png'
@@ -109,7 +110,8 @@ class TileView(QPushButton):
         self.setIcon(icon)
 
     def _adjust_icon_size(self, height: int) -> None:
-        self.setIconSize(QSize(height - 2, height - 2)) if height > 2 else self.setIconSize(QSize(height, height))
+        size = int(height * self.ICON_SIZE_FACTOR)
+        self.setIconSize(QSize(size, size)) if height > 2 else self.setIconSize(QSize(height, height))
 
     def _set_font_size_based_on_height(self, height: int) -> None:
         new_size = height // 2
