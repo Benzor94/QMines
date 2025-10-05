@@ -65,9 +65,16 @@ class Application(QObject):
         self.pause_availability_state_changed.emit(ControlManager.PauseAvailability.DISABLED)
         self.game_over.emit(reason)
         self._game_over = True
-        result = GameOverMessage(reason, self._mainwindow).exec()
-        if result == GameOverMessage.StandardButton.Ok:
-            self.on_new_game()
+        message = GameOverMessage(reason, self._mainwindow)
+        message.exec()
+        clicked = message.clickedButton()
+        match clicked:
+            case message.new_game:
+                self.on_new_game()
+            case message.reset:
+                self.on_game_reset()
+            case _:
+                ...
 
     @Slot(bool)
     def on_game_paused(self, paused: bool) -> None:
