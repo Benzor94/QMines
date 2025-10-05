@@ -6,7 +6,6 @@ from typing import Concatenate
 from PySide6.QtCore import QObject, Signal, Slot
 from PySide6.QtWidgets import QDialog, QMessageBox
 
-from qmines.application.about_message import AboutMessage
 from qmines.application.game_over_message import GameOverMessage
 from qmines.application.mainwindow import MainWindow
 from qmines.application.pause_view import PauseView
@@ -105,7 +104,6 @@ class Application(QObject):
     @Slot()
     @dialog_pause_guard
     def on_about_message_invoked(self) -> None:
-        #AboutMessage(self._mainwindow).exec()
         QMessageBox.about(self._mainwindow, 'About', f'QMines {get_version()}\n\nSimple minesweeper game.')
 
     def _set_up_game(self, config: Config) -> None:
