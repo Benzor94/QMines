@@ -6,7 +6,7 @@ from qmines.new_game_selector.custom_mode_selector import CustomModeSelector
 
 
 class NewGameDialog(QDialog):
-    def __init__(self, parent: QWidget, config: Config) -> None:
+    def __init__(self, parent: QWidget | None, config: Config) -> None:
         super().__init__(parent)
         self.setWindowTitle('Set Up New Game')
         self._easy_mode_button = ModeSelectorButton(ModeSelectorButton.Mode.EASY)

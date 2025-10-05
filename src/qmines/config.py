@@ -17,7 +17,7 @@ MEDIUM_CONFIG: Final[Config] = Config(16, 16, 40)
 HARD_CONFIG: Final[Config] = Config(16, 30, 99)
 
 
-def read_config_from_file() -> Config:
+def read_config_from_file() -> Config | None:
     try:
         with open(_get_config_file(), 'r') as f:
             config_json = json.load(f)
@@ -35,8 +35,8 @@ def read_config_from_file() -> Config:
         return Config(n_rows, n_cols, n_mines)
 
     except Exception as e:
-        print(f'Something went wrong: {e}. Using easy mode values as config.')
-        return EASY_CONFIG
+        print(f'Something went wrong: {e}. Asking the user for config.')
+        return None
 
 
 def write_config_to_file(config: Config) -> None:

@@ -1,5 +1,6 @@
 from collections.abc import Callable
 from functools import wraps
+import sys
 from typing import Concatenate
 
 from PySide6.QtCore import QObject, Signal, Slot
@@ -12,7 +13,7 @@ from qmines.application.pause_view import PauseView
 from qmines.application.start_over_message import StartOverMessage
 from qmines.board.board import Board
 from qmines.common import GameOverReason
-from qmines.config import Config, read_config_from_file, write_config_to_file
+from qmines.config import EASY_CONFIG, Config, read_config_from_file, write_config_to_file
 from qmines.controls.control_manager import ControlManager
 from qmines.new_game_selector.new_game_dialog import NewGameDialog
 
@@ -41,7 +42,6 @@ class Application(QObject):
 
     def __init__(self) -> None:
         super().__init__()
-        self._config = read_config_from_file()
         self._game_started = False
         self._game_over = False
         self._paused = False
@@ -50,6 +50,7 @@ class Application(QObject):
         self._control_manager = None
         self._new_game_dialog = None
         self._mainwindow = None
+        self._config = self._get_initial_config()
         self._set_up_game(self._config)
 
     @Slot()
@@ -99,9 +100,7 @@ class Application(QObject):
     
     @Slot()
     def on_game_quit(self) -> None:
-        app = QApplication.instance()
-        if app is not None:
-            app.quit()
+        sys.exit()
     
     @Slot()
     @dialog_pause_guard
@@ -133,5 +132,17 @@ class Application(QObject):
         self._control_manager.about_dialog_invoked.connect(self.on_about_message_invoked)
         # Some combination of pause and dialog can cause the timer to go off at start, this fixes it
         self.time_tracking_state_change.emit(ControlManager.TimerStateChange.STOP)
+    
+    def _get_initial_config(self) -> Config:
+        config = read_config_from_file()
+        if config is not None:
+            return config
+        dialog = NewGameDialog(None, EASY_CONFIG)
+        result = dialog.exec()
+        config = dialog.selected_config
+        if result != QDialog.DialogCode.Accepted:
+            sys.exit()
+        return config
+
     
 
