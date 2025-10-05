@@ -1,10 +1,10 @@
+import sys
 from collections.abc import Callable
 from functools import wraps
-import sys
 from typing import Concatenate
 
 from PySide6.QtCore import QObject, Signal, Slot
-from PySide6.QtWidgets import QApplication, QDialog
+from PySide6.QtWidgets import QDialog, QMessageBox
 
 from qmines.application.about_message import AboutMessage
 from qmines.application.game_over_message import GameOverMessage
@@ -12,7 +12,7 @@ from qmines.application.mainwindow import MainWindow
 from qmines.application.pause_view import PauseView
 from qmines.application.start_over_message import StartOverMessage
 from qmines.board.board import Board
-from qmines.common import GameOverReason
+from qmines.common import GameOverReason, get_version
 from qmines.config import EASY_CONFIG, Config, read_config_from_file, write_config_to_file
 from qmines.controls.control_manager import ControlManager
 from qmines.new_game_selector.new_game_dialog import NewGameDialog
@@ -105,8 +105,8 @@ class Application(QObject):
     @Slot()
     @dialog_pause_guard
     def on_about_message_invoked(self) -> None:
-        assert self._mainwindow is not None
-        AboutMessage(self._mainwindow).exec()
+        #AboutMessage(self._mainwindow).exec()
+        QMessageBox.about(self._mainwindow, 'About', f'QMines {get_version()}\n\nSimple minesweeper game.')
 
     def _set_up_game(self, config: Config) -> None:
         write_config_to_file(config)
