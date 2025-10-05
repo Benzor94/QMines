@@ -8,7 +8,7 @@ from qmines.config import Config
 from qmines.controls.actions import AboutAction, NewGameAction, PauseAction, QuitAction, ResetGameAction
 from qmines.controls.counters import MineCounter, TimeTracker
 from qmines.controls.menubar import MenuBar
-from qmines.controls.toolbar_view import Toolbar
+from qmines.controls.toolbar import Toolbar
 
 
 class ControlManager(QObject):
