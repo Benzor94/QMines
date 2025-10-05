@@ -9,4 +9,8 @@ Creative Commons Attribution 3.0 License.
 
 The flag icon `flag256.png` is created by [Alfredo Hernandez](https://www.flaticon.com/free-icons/red-flag)
 
+The mine icon `mine256.png` is created by [Creaticca Creative Agency](https://www.flaticon.com/free-icons/mine)
+
+The explosion icon `explosion256.png` is created by [Ylivdesign](https://www.flaticon.com/free-icons/bomb)
+
 All other assets used are -- to the best of my knowledge -- freely reusable.
